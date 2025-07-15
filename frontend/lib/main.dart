@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'functions/functions.dart';
 import 'pages/workspace_page.dart';
+import 'board/presentation/pages/board_page.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -50,6 +51,7 @@ class MyApp extends StatelessWidget {
             return const WorkspacePage();
           },
         ),
+        '/board': (context) => const BoardPage(),
         // '/login': (context) => const LoginPage(),
         // '/register': (context) => const RegisterPage(),
       },
