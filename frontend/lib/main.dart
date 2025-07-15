@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'functions/functions.dart';
-import 'pages/workspace_page.dart';
+import 'functions/logged_in.dart';
+import 'pages/pages.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -15,11 +15,14 @@ void main() async {
   await Hive.openBox('settings');
   // Create box for uncommited changes in canvas
   await Hive.openBox('changes');
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
+
+  // Navigator key
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   // App theme generator
   static var themeData = ThemeData(
@@ -31,7 +34,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // navigatorKey: navigatorKey,
+      navigatorKey: navigatorKey,
       title: 'Your Workspace',
       theme: themeData,
       initialRoute: '/',
@@ -50,7 +53,8 @@ class MyApp extends StatelessWidget {
             return const WorkspacePage();
           },
         ),
-        // '/login': (context) => const LoginPage(),
+        '/home': (context) => const WorkspacePage(),
+        '/login': (context) => const LoginPage(),
         // '/register': (context) => const RegisterPage(),
       },
     );
