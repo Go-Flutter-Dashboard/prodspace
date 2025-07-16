@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:typed_data'; // Добавлено для Uint8List
+import 'dart:convert';
 
 enum ToolType {
   pan,
@@ -48,4 +49,23 @@ class DrawPath {
   final double strokeWidth;
 
   DrawPath(this.points, this.color, this.strokeWidth);
+}
+
+extension DrawPathJson on DrawPath {
+  Map<String, dynamic> toJson() => {
+    'points': points.map((p) => {'x': p.dx, 'y': p.dy}).toList(),
+    'color': '#${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}',
+    'strokeWidth': strokeWidth,
+  };
+}
+
+extension BoardObjectJson on BoardObject {
+  Map<String, dynamic> toJson() => {
+    'type': type.name,
+    'position': {'x': position.dx, 'y': position.dy},
+    'size': {'width': size.width, 'height': size.height},
+    'color': '#${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}',
+    if (text != null) 'text': text,
+    if (imageBytes != null) 'imageBytes': base64Encode(imageBytes!),
+  };
 } 

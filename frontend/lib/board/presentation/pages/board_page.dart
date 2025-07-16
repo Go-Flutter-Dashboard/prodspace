@@ -14,6 +14,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
 import 'package:flutter/gestures.dart';
 import 'package:prodspace/settings/presentations/widgets/settings_btn.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class BoardPage extends StatefulWidget {
   const BoardPage({super.key});
@@ -340,11 +342,49 @@ class _BordPageState extends State<BoardPage> {
     });
   }
 
+  // Функция отправки доски на бекенд
+  Future<void> _sendBoardToBackend() async {
+    final boardData = {
+      'objects': _objects.map((o) => o.toJson()).toList(),
+      'paths': _paths.map((p) => p.toJson()).toList(),
+    };
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/workspaces/my/items'), 
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(boardData),
+      );
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Доска успешно сохранена!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка сохранения: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка соединения: ${e.toString()}')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final hasSelection = _selectedObjectIndices.isNotEmpty || _selectedPathIndices.isNotEmpty;
     return Scaffold(
-      appBar: AppBar(title: const Text('Интерактивная доска'), actions: [settingsButton(context)],),
+      appBar: AppBar(
+        title: const Text('Интерактивная доска'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            tooltip: 'Сохранить доску',
+            onPressed: _sendBoardToBackend,
+          ),
+          settingsButton(context),
+        ],
+      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final Offset effectiveOffset = _canvasOffset;
