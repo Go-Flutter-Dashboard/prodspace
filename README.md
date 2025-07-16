@@ -20,7 +20,7 @@
 - [x] Docker compose for all services (1 point)
 - [x] CI/CD pipeline implementation (1 point)
 - [x] Environment configuration management using config files (1 point)
-- [x] GitHub pages for the project (1 point)
+- [] GitHub pages for the project (1 point)
 
 ### Non-Technical Requirements (10 points)
 #### Project management (4 points)
@@ -47,6 +47,6 @@
 - [ ] Advanced animations and transitions (up to 3 points)
 - [ ] Widget implementation for native mobile elements (up to 2 points)
 
-Total points implemented: 28/30 (excluding bonus points)
+Total points implemented: 27/30 (excluding bonus points)
 
 Note: For each implemented feature, provide a brief description or link to the relevant implementation below the checklist.
