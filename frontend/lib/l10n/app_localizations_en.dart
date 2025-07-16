@@ -64,4 +64,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enterWithoutRegistration => "Want to try without creating an account? Enter as Guest";
+
+  @override
+  String get language => "Language";
+
+  @override
+  String get languageChanged => "Language successfully changed!";
 }

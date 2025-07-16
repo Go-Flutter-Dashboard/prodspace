@@ -64,4 +64,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get enterWithoutRegistration => "Хотите попробовать без регистрации? Войдите как гость";
+
+  @override
+  String get language => "Язык";
+
+  @override
+  String get languageChanged => "Язык успешно изменен!";
 }
