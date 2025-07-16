@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
@@ -35,13 +37,13 @@ class _RegisterPageState extends State<RegisterPage> {
 
       // Request to backend
       final response = await http.post(
-        Uri.parse('localhost:8080'),
+        Uri.parse('http://localhost:3000/register'),
         headers: {'Content-Type': 'application/json'},
-        body: '{"username": "$username", "password": "$password"}',
+        body: '{"login": "$username", "password": "$password"}',
       );
 
       // Bad response case
-      if (response.statusCode != 200) {
+      if (response.statusCode < 200 || response.statusCode > 299) {
         // Log failure
         debugPrint('Registration failed: ${response.statusCode}');
         if (!mounted) return;
@@ -67,6 +69,8 @@ class _RegisterPageState extends State<RegisterPage> {
       }
       final settingsBox = Hive.box('user_parameters');
       settingsBox.put('username', username);
+      final responseJson = jsonDecode(response.body);
+      settingsBox.put('token', responseJson['token']);
 
       // Log success
       debugPrint('Registered: $username');

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
@@ -34,13 +36,14 @@ class _LoginPageState extends State<LoginPage> {
 
       // Request to backend
       final response = await http.post(
-        Uri.parse('http://localhost:8080'),
+        Uri.parse('http://localhost:3000/login'),
         headers: {'Content-Type': 'application/json'},
-        body: '{"username": "$username", "password": "$password"}',
+        // {'Authorization': "Baerer $token"}
+        body: '{"login": "$username", "password": "$password"}',
       );
 
       // Bad response case
-      if (response.statusCode != 200) {
+      if (response.statusCode < 200 || response.statusCode > 299) {
         // Log failure
         debugPrint('Login failed: ${response.statusCode}');
         if (!mounted) return;
@@ -66,6 +69,8 @@ class _LoginPageState extends State<LoginPage> {
       }
       final userBox = Hive.box('user_parameters');
       userBox.put('username', username);
+      final responseJson = jsonDecode(response.body);
+      userBox.put('token', responseJson['token']);
 
       // Log success
       debugPrint('Logged in: $username');
