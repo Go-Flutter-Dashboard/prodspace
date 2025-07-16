@@ -55,6 +55,16 @@ class BoardObjectWidget extends StatelessWidget {
           ),
         );
         break;
+      case BoardObjectType.image:
+        child = object.imageBytes != null
+            ? Image.memory(
+                object.imageBytes!,
+                width: object.size.width,
+                height: object.size.height,
+                fit: BoxFit.cover,
+              )
+            : const SizedBox.shrink();
+        break;
       default:
         child = const SizedBox.shrink();
     }

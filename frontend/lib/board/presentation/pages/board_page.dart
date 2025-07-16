@@ -10,6 +10,8 @@ import '../widgets/board_object_widget.dart';
 import '../widgets/board_painter.dart';
 import '../widgets/dashed_rect.dart';
 import '../widgets/color_picker_dialog.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:typed_data';
 
 class BoardPage extends StatefulWidget {
   const BoardPage({super.key});
@@ -97,6 +99,22 @@ class _BordPageState extends State<BoardPage> {
         break;
       case ToolType.pan:
         // Не добавляем объект
+        break;
+      case ToolType.image:
+        final picker = ImagePicker();
+        final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+        if (pickedFile != null) {
+          final bytes = await pickedFile.readAsBytes();
+          setState(() {
+            _objects.add(BoardObject(
+              type: BoardObjectType.image,
+              position: boardPos,
+              size: const Size(160, 120),
+              color: Colors.transparent,
+              imageBytes: bytes,
+            ));
+          });
+        }
         break;
     }
   }

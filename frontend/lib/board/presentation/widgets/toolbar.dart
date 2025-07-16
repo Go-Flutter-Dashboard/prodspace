@@ -63,6 +63,8 @@ class Toolbar extends StatelessWidget {
           }),
           const SizedBox(width: 8),
           _toolButton(Icons.edit, ToolType.draw, 'Рисование'),
+          const SizedBox(width: 8),
+          _toolButton(Icons.image, ToolType.image, 'Изображение'),
         ],
       ),
     );
