@@ -15,10 +15,17 @@ class _RegisterPageState extends State<RegisterPage> {
   // Controllers for name and password
   final _nameController = TextEditingController();
   final _passwordController = TextEditingController();
+  // State management
+  bool isLoading = false;
 
   // Submit button pressed
   void _submit() async {
     if (_formKey.currentState!.validate()) {
+      // Update state
+      setState(() {
+        isLoading = true;
+      });
+
       // Get values from controllers
       final username = _nameController.text.trim();
       final password = _passwordController.text;
@@ -38,12 +45,17 @@ class _RegisterPageState extends State<RegisterPage> {
         // Log failure
         debugPrint('Registration failed: ${response.statusCode}');
         if (!mounted) return;
+        // Show error state
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Registration failed: ${response.reasonPhrase}'),
             duration: const Duration(seconds: 1),
           ),
         );
+        // Update state
+        setState(() {
+          isLoading = false;
+        });
         return;
       }
 
@@ -65,8 +77,16 @@ class _RegisterPageState extends State<RegisterPage> {
           duration: const Duration(seconds: 1),
         ),
       );
+
+      // Save user logged in
       await setLoggedIn(true);
       if (!mounted) return;
+
+      // Update state
+      setState(() {
+        isLoading = false;
+      });
+
       Navigator.pushReplacementNamed(context, '/home');
     }
   }
@@ -84,7 +104,8 @@ class _RegisterPageState extends State<RegisterPage> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
+            child: isLoading ? Center(child: CircularProgressIndicator()) :
+            Column(
               children: [
                 const Text(
                   'Create an Account',
