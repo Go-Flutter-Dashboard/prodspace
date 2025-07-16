@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'functions/logged_in.dart';
-import 'pages/pages.dart';
-import 'board/presentation/pages/board_page.dart';
+import 'login and regestration/logged_in.dart';
+import 'pages.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 

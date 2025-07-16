@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:prodspace/functions/logged_in.dart';
+import 'package:prodspace/login%20and%20regestration/logged_in.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,15 +12,15 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  // Controllers for email and password
-  final _emailController = TextEditingController();
+  // Controllers for name and password
+  final _nameController = TextEditingController();
   final _passwordController = TextEditingController();
 
   // Submit button pressed
   void _submit() async {
     if (_formKey.currentState!.validate()) {
       // Get values from controllers
-      final email = _emailController.text.trim();
+      final username = _nameController.text.trim();
       final password = _passwordController.text;
 
       // Request to backend
@@ -30,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
           'localhost:8080'
         ),
         headers: {'Content-Type': 'application/json'},
-        body: '{"email": "$email", "password": "$password"}',
+        body: '{"username": "$username", "password": "$password"}',
       );
 
       // Bad response case
@@ -54,16 +53,14 @@ class _LoginPageState extends State<LoginPage> {
         await Hive.openBox('user_parameters');
       }
       final userBox = Hive.box('user_parameters');
-      userBox.put('email', email);
-      final responseJson = jsonDecode(response.body);
-      userBox.put('name', '${responseJson['name']}');
+      userBox.put('username', username);
 
       // Log success
-      debugPrint('Logged in: $email, $password');
+      debugPrint('Logged in: $username');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Logged in: $email'),
+          content: Text('Logged in: $username'),
           duration: const Duration(seconds: 1),
         ),
       );
@@ -106,21 +103,15 @@ class _LoginPageState extends State<LoginPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           TextFormField(
-                            controller: _emailController,
+                            controller: _nameController,
                             decoration: const InputDecoration(
-                              labelText: 'Email',
+                              labelText: 'Username',
                             ),
                             autovalidateMode:
                                 AutovalidateMode.onUserInteraction,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Enter email';
-                              }
-                              final emailPattern = RegExp(
-                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                              );
-                              if (!emailPattern.hasMatch(value)) {
-                                return 'Enter a valid email';
+                                return 'Enter username';
                               }
                               return null;
                             },
