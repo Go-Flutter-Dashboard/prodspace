@@ -9,6 +9,7 @@ import 'theme/theme_provider.dart';
 import 'theme/app_theme.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:prodspace/l10n/localization_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,10 +25,15 @@ void main() async {
 
   final themeProvider = ThemeProvider();
   await themeProvider.initialize();
+  final localeProvider = LocaleProvider();
+  await localeProvider.initialize();
 
   runApp(
-    ChangeNotifierProvider.value(
-      value: themeProvider,
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: themeProvider),
+        ChangeNotifierProvider.value(value: localeProvider),
+      ],
       child: MyApp(),
     ),
   );
@@ -43,6 +49,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final localeProvider = Provider.of<LocaleProvider>(context);
 
     if (themeProvider.isLoading) {
       return const MaterialApp(
@@ -58,6 +65,7 @@ class MyApp extends StatelessWidget {
       theme: AppThemes.lightTheme,
       darkTheme: AppThemes.darkTheme,
       themeMode: themeProvider.themeMode,
+      locale: localeProvider.locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
