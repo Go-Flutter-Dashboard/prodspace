@@ -18,6 +18,4 @@ class AppThemes {
     ),
     useMaterial3: true,
   );
-
-  static ThemeMode thememode = ThemeMode.system;
 }
