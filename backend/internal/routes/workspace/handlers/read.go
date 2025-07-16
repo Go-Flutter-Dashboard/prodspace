@@ -132,6 +132,7 @@ func GetWorkspace(c *fiber.Ctx) error {
 // @Security BearerAuth
 // @Success 200 {object} models.WorkspaceRead
 // @Failure 400 {object} models.ErrorResponse "Bad Request"
+// @Failure 401 {object} models.ErrorResponse "Bad Request"
 // @Failure 404 {object} models.ErrorResponse "User Not Found"
 // @Failure 500 {object} models.ErrorResponse "Internal Server Error"
 // @Router /workspaces/my [get]
@@ -157,8 +158,8 @@ func GetMyWorkspace(c *fiber.Ctx) error {
 		Preload("Items.ImageItem").
 		Preload("Items.ListItem.TodoListFields.TextItem").
 		Preload("Items.ShapeItem").
-		Preload("Items.DrawingItem").
-		Joins("User").
+		Preload("Items.DrawingItem.Points").
+		Where("user_id = ?", id).
 		First(&workspace, "user_id = ?", id).Error
 
 	if err != nil {
