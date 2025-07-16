@@ -6,6 +6,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:prodspace/l10n/app_localizations.dart';
 import 'package:prodspace/login_n_regestration/logged_in.dart';
 import 'package:prodspace/settings/presentations/widgets/settings_btn.dart';
+import 'package:prodspace/l10n/app_localizations.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -100,10 +101,11 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.login),
+        title: Text(localizations.login),
         backgroundColor: colorScheme.primaryContainer,
         foregroundColor: colorScheme.onPrimaryContainer,
         actions: [settingsButton(context)],
@@ -119,7 +121,7 @@ class _LoginPageState extends State<LoginPage> {
                   : Column(
                       children: [
                         Text(
-                          AppLocalizations.of(context)!.loginToAccount,
+                          localizations.loginToAccount,
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -174,7 +176,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ElevatedButton(
                                     onPressed: _submit,
                                     child: Text(
-                                      AppLocalizations.of(context)!.login,
+                                      localizations.login,
                                     ),
                                   ),
                                 ],
@@ -189,8 +191,29 @@ class _LoginPageState extends State<LoginPage> {
                             '/register',
                           ),
                           child: Text(
-                            AppLocalizations.of(context)!.dontHaveAccount,
+                            localizations.dontHaveAccount,
                           ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () async {
+                            if (!Hive.isBoxOpen('user_parameters')) {
+                              await Hive.openBox('user_parameters');
+                            }
+                            final settingsBox = Hive.box('user_parameters');
+                            settingsBox.put('username', 'Guest Mode');
+
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Logged in as Guest'),
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                            if (!context.mounted) return;
+                            Navigator.pushReplacementNamed(context, '/home');
+                          },
+                          child: Text(localizations.enterWithoutRegistration),
                         ),
                       ],
                     ),

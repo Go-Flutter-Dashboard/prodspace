@@ -137,6 +137,8 @@ abstract class AppLocalizations {
   /// **'Don\'t have an account? Register'**
   String get dontHaveAccount;
 
+  String get enterWithoutRegistration;
+
   /// No description provided for @enterUsername.
   ///
   /// In en, this message translates to:

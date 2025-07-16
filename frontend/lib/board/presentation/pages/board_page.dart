@@ -382,6 +382,7 @@ class _BordPageState extends State<BoardPage> {
     });
   }
 
+
   // Функция отправки только объектов из очереди
   Future<void> _sendBoardToBackend() async {
     if (_isSending) return; // Prevent multiple sends
@@ -391,6 +392,16 @@ class _BordPageState extends State<BoardPage> {
     });
 
     final box = await Hive.openBox('user_parameters');
+    // Save in guest mode
+    if (box.get('username') == "Guest Mode") {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You cannot do it in guest mode. Register or Login to save your changes')),
+      );
+      setState(() {
+        _isSending = false;
+      });
+      return;
+    }
     final token = box.get('token');
     if (token == null) {
       ScaffoldMessenger.of(context).showSnackBar(

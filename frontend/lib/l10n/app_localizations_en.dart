@@ -61,4 +61,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get haveAccount => 'Already have an account? Login';
+
+  @override
+  String get enterWithoutRegistration => "Want to try without creating an account? Enter as Guest";
 }

@@ -173,6 +173,27 @@ class _RegisterPageState extends State<RegisterPage> {
                               Navigator.pushReplacementNamed(context, '/login'),
                           child: Text(localizations.haveAccount),
                         ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () async {
+                            if (!Hive.isBoxOpen('user_parameters')) {
+                              await Hive.openBox('user_parameters');
+                            }
+                            final settingsBox = Hive.box('user_parameters');
+                            settingsBox.put('username', 'Guest Mode');
+
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Logged in as Guest'),
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                            if (!context.mounted) return;
+                            Navigator.pushReplacementNamed(context, '/home');
+                          },
+                          child: Text(localizations.enterWithoutRegistration),
+                        ),
                       ],
                     ),
             ),
