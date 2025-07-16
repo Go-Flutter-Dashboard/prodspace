@@ -3,6 +3,7 @@ import 'login_n_regestration/logged_in.dart';
 import 'pages.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
+import 'theme/app_theme.dart';
 
 void main() async {
   // Path to folder with user variables
@@ -24,24 +25,21 @@ class MyApp extends StatelessWidget {
   // Navigator key
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-  // App theme generator
-  static var themeData = ThemeData(
-    colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurpleAccent),
-    useMaterial3: true,
-  );
-
   // This widget is the root of the application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'Your Workspace',
-      theme: themeData,
+      theme: AppThemes.lightTheme,
+      darkTheme: AppThemes.darkTheme,
+      themeMode: AppThemes.thememode,
       initialRoute: '/',
       routes: {
         '/': (context) => FutureBuilder<bool>(
           future: hasLoggedInBefore(),
           builder: (context, snapshot) {
+            // Loading state
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
