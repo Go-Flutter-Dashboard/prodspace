@@ -34,9 +34,7 @@ class _LoginPageState extends State<LoginPage> {
 
       // Request to backend
       final response = await http.post(
-        Uri.parse(
-          'http://localhost:8080'
-        ),
+        Uri.parse('http://localhost:8080'),
         headers: {'Content-Type': 'application/json'},
         body: '{"username": "$username", "password": "$password"}',
       );
@@ -95,81 +93,102 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    var colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.login),
-        backgroundColor: colorScheme.tertiary,
-        foregroundColor: colorScheme.onTertiary,
-        actions: [
-        settingsButton(context),
-      ],
+        backgroundColor: colorScheme.primaryContainer,
+        foregroundColor: colorScheme.onPrimaryContainer,
+        actions: [settingsButton(context)],
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: isLoading ? Center(child: CircularProgressIndicator()) :
-            Column(
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.loginToAccount,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextFormField(
-                            controller: _nameController,
-                            decoration: InputDecoration(
-                              labelText: AppLocalizations.of(context)!.username,
+      body: Container(
+        color: colorScheme.surface,
+        child: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : Column(
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)!.loginToAccount,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextFormField(
+                                    controller: _nameController,
+                                    decoration: InputDecoration(
+                                      labelText: AppLocalizations.of(
+                                        context,
+                                      )!.username,
+                                    ),
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return AppLocalizations.of(
+                                          context,
+                                        )!.enterUsername;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextFormField(
+                                    controller: _passwordController,
+                                    decoration: InputDecoration(
+                                      labelText: AppLocalizations.of(
+                                        context,
+                                      )!.password,
+                                    ),
+                                    obscureText: true,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    validator: (value) =>
+                                        value != null && value.length >= 6
+                                        ? null
+                                        : AppLocalizations.of(
+                                            context,
+                                          )!.min6chars,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton(
+                                    onPressed: _submit,
+                                    child: Text(
+                                      AppLocalizations.of(context)!.login,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return AppLocalizations.of(context)!.enterUsername;
-                              }
-                              return null;
-                            },
                           ),
-                          const SizedBox(height: 12),
-                          TextFormField(
-                            controller: _passwordController,
-                            decoration: InputDecoration(
-                              labelText: AppLocalizations.of(context)!.password,
-                            ),
-                            obscureText: true,
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            validator: (value) =>
-                                value != null && value.length >= 6
-                                ? null
-                                : AppLocalizations.of(context)!.min6chars,
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () => Navigator.pushReplacementNamed(
+                            context,
+                            '/register',
                           ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _submit,
-                            child: Text(AppLocalizations.of(context)!.login),
+                          child: Text(
+                            AppLocalizations.of(context)!.dontHaveAccount,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () =>
-                      Navigator.pushReplacementNamed(context, '/register'),
-                  child: Text(AppLocalizations.of(context)!.dontHaveAccount),
-                ),
-              ],
             ),
           ),
         ),

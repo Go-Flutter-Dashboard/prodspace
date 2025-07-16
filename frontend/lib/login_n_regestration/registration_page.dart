@@ -14,7 +14,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // Controllers for name and password
   final _nameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -35,12 +35,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
       // Request to backend
       final response = await http.post(
-        Uri.parse(
-          'localhost:8080',
-        ),
+        Uri.parse('localhost:8080'),
         headers: {'Content-Type': 'application/json'},
-        body:
-            '{"username": "$username", "password": "$password"}',
+        body: '{"username": "$username", "password": "$password"}',
       );
 
       // Bad response case
@@ -97,75 +94,83 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    var colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(localizations.register),
-        backgroundColor: colorScheme.tertiary,
-        foregroundColor: colorScheme.onTertiary,
-        actions: [
-          settingsButton(context)
-        ],
+        backgroundColor: colorScheme.primaryContainer,
+        foregroundColor: colorScheme.onPrimaryContainer,
+        actions: [settingsButton(context)],
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: isLoading ? Center(child: CircularProgressIndicator()) :
-            Column(
-              children: [
-                Text(
-                  localizations.createAccount,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          TextFormField(
-                            controller: _nameController,
-                            decoration: InputDecoration(
-                              labelText: localizations.username,
+      body: Container(
+        color: colorScheme.surface,
+        child: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : Column(
+                      children: [
+                        Text(
+                          localizations.createAccount,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                children: [
+                                  TextFormField(
+                                    controller: _nameController,
+                                    decoration: InputDecoration(
+                                      labelText: localizations.username,
+                                    ),
+                                    validator: (value) =>
+                                        value == null || value.isEmpty
+                                        ? localizations.enterUsername
+                                        : null,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextFormField(
+                                    controller: _passwordController,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    decoration: InputDecoration(
+                                      labelText: localizations.password,
+                                    ),
+                                    obscureText: true,
+                                    validator: (value) =>
+                                        value != null && value.length >= 6
+                                        ? null
+                                        : localizations.min6chars,
+                                  ),
+                                  const SizedBox(height: 24),
+                                  ElevatedButton(
+                                    onPressed: _submit,
+                                    child: Text(localizations.submit),
+                                  ),
+                                ],
+                              ),
                             ),
-                            validator: (value) => value == null || value.isEmpty
-                                ? localizations.enterUsername
-                                : null,
                           ),
-                          const SizedBox(height: 12),
-                          TextFormField(
-                            controller: _passwordController,
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            decoration: InputDecoration(
-                              labelText: localizations.password,
-                            ),
-                            obscureText: true,
-                            validator: (value) =>
-                                value != null && value.length >= 6
-                                ? null
-                                : localizations.min6chars,
-                          ),
-                          const SizedBox(height: 24),
-                          ElevatedButton(
-                            onPressed: _submit,
-                            child: Text(localizations.submit),
-                          ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () =>
+                              Navigator.pushReplacementNamed(context, '/login'),
+                          child: Text(localizations.haveAccount),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () =>
-                      Navigator.pushReplacementNamed(context, '/login'),
-                  child: Text(localizations.haveAccount),
-                ),
-              ],
             ),
           ),
         ),
