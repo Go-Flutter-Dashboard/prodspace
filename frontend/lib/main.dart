@@ -45,12 +45,12 @@ class MyApp extends StatelessWidget {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
-            return const BoardPage();
-            // if (snapshot.data == true) {
-            //   return const BoardPage();
-            // } else {
-            //   return const LoginPage(); 
-            // }
+            //return const BoardPage();
+            if (snapshot.data == true) {
+              return const BoardPage();
+            } else {
+              return const LoginPage(); 
+            }
           },
         ),
         '/home': (context) => const BoardPage(),
