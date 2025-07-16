@@ -446,7 +446,7 @@ class _BordPageState extends State<BoardPage> {
         _selectedObjectIndices.isNotEmpty || _selectedPathIndices.isNotEmpty;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Интерактивная доска'),
+        title: const Text('Доска продуктивности'),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),

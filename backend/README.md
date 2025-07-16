@@ -12,3 +12,6 @@ OR
 Optionally, generate swagger docs with
 
 `swag init --dir . --generalInfo ./app/main.go --output ./docs`
+
+![Database architecture diagram](docs/diagram.png)
+
