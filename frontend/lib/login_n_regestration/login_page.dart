@@ -93,86 +93,104 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    var colorScheme = Theme.of(context).colorScheme;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Login"),
-        backgroundColor: colorScheme.tertiary,
-        foregroundColor: colorScheme.onTertiary,
-        actions: [
-        settingsButton(context),
-      ],
-      ),
-      body: Center(
+Widget build(BuildContext context) {
+  final theme = Theme.of(context);
+  final colorScheme = theme.colorScheme;
+  
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text("Login"),
+      backgroundColor: colorScheme.primaryContainer,
+      foregroundColor: colorScheme.onPrimaryContainer,
+      actions: [settingsButton(context)],
+    ),
+    body: Container(
+      color: colorScheme.surface,
+      child: Center(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: isLoading ? Center(child: CircularProgressIndicator()) :
-            Column(
-              children: [
-                const Text(
-                  'Login to Your Account',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextFormField(
-                            controller: _nameController,
-                            decoration: const InputDecoration(
-                              labelText: 'Username',
-                            ),
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Enter username';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          TextFormField(
-                            controller: _passwordController,
-                            decoration: const InputDecoration(
-                              labelText: 'Password',
-                            ),
-                            obscureText: true,
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            validator: (value) =>
-                                value != null && value.length >= 6
-                                ? null
-                                : 'Min 6 characters',
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _submit,
-                            child: const Text('Login'),
-                          ),
-                        ],
+            child: isLoading 
+                ? CircularProgressIndicator(color: colorScheme.primary)
+                : Column(
+                    children: [
+                      Text(
+                        'Login to Your Account',
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 16),
+                      Card(
+                        color: colorScheme.surfaceContainerHighest,
+                        elevation: 2,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextFormField(
+                                  controller: _nameController,
+                                  style: TextStyle(color: colorScheme.onSurface),
+                                  decoration: InputDecoration(
+                                    labelText: 'Username',
+                                    labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                                    enabledBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(color: colorScheme.outline),
+                                    ),
+                                  ),
+                                  validator: (value) => value?.isEmpty ?? true 
+                                      ? 'Enter username' 
+                                      : null,
+                                ),
+                                const SizedBox(height: 12),
+                                TextFormField(
+                                  controller: _passwordController,
+                                  style: TextStyle(color: colorScheme.onSurface),
+                                  decoration: InputDecoration(
+                                    labelText: 'Password',
+                                    labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                                    enabledBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(color: colorScheme.outline),
+                                    ),
+                                  ),
+                                  obscureText: true,
+                                  validator: (value) => value != null && value.length >= 6
+                                      ? null
+                                      : 'Min 6 characters',
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: _submit,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: colorScheme.primary,
+                                    foregroundColor: colorScheme.onPrimary,
+                                    minimumSize: const Size(double.infinity, 50),
+                                  ),
+                                  child: const Text('Login'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: () => Navigator.pushReplacementNamed(context, '/register'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: colorScheme.primary,
+                        ),
+                        child: const Text('Don\'t have an account? Register'),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () =>
-                      Navigator.pushReplacementNamed(context, '/register'),
-                  child: const Text('Don\'t have an account? Register'),
-                ),
-              ],
-            ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
