@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:typed_data'; // Добавлено для Uint8List
+import 'dart:convert';
 
 enum ToolType {
   pan,
@@ -48,4 +49,55 @@ class DrawPath {
   final double strokeWidth;
 
   DrawPath(this.points, this.color, this.strokeWidth);
+}
+
+extension DrawPathJson on DrawPath {
+  Map<String, dynamic> toJson() => {
+    'points': points.map((p) => {'x': p.dx, 'y': p.dy}).toList(),
+    'color': '#${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}',
+    'strokeWidth': strokeWidth,
+  };
+}
+
+extension BoardObjectJson on BoardObject {
+  Map<String, dynamic> toJson({int? zIndex}) {
+    final map = <String, dynamic>{
+      'position_x': position.dx,
+      'position_y': position.dy,
+      'z_index': zIndex ?? 1,
+    };
+
+    switch (type) {
+      case BoardObjectType.image:
+        if (imageBytes != null) {
+          map['image'] = {
+            'bytes': base64Encode(imageBytes!),
+          };
+        }
+        break;
+      case BoardObjectType.text:
+        if (text != null) {
+          map['text'] = {'content': text};
+        }
+        break;
+      case BoardObjectType.rectangle:
+        map['name'] = 'rectangle';
+        map['shape'] = 'rectangle';
+        if (text != null) {
+          map['text'] = {'content': text};
+        }
+        break;
+      case BoardObjectType.circle:
+        map['name'] = 'circle';
+        map['shape'] = 'circle';
+        if (text != null) {
+          map['text'] = {'content': text};
+        }
+        break;
+      default:
+        break;
+    }
+
+    return map;
+  }
 } 

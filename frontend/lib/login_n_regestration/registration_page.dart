@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:prodspace/l10n/app_localizations.dart';
 import 'package:prodspace/login_n_regestration/logged_in.dart';
 import 'package:prodspace/settings/presentations/widgets/settings_btn.dart';
 
@@ -13,6 +16,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+
   // Controllers for name and password
   final _nameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -33,16 +37,13 @@ class _RegisterPageState extends State<RegisterPage> {
 
       // Request to backend
       final response = await http.post(
-        Uri.parse(
-          'localhost:8080',
-        ),
+        Uri.parse('http://localhost:3000/register'),
         headers: {'Content-Type': 'application/json'},
-        body:
-            '{"username": "$username", "password": "$password"}',
+        body: '{"login": "$username", "password": "$password"}',
       );
 
       // Bad response case
-      if (response.statusCode != 200) {
+      if (response.statusCode < 200 || response.statusCode > 299) {
         // Log failure
         debugPrint('Registration failed: ${response.statusCode}');
         if (!mounted) return;
@@ -68,6 +69,8 @@ class _RegisterPageState extends State<RegisterPage> {
       }
       final settingsBox = Hive.box('user_parameters');
       settingsBox.put('username', username);
+      final responseJson = jsonDecode(response.body);
+      settingsBox.put('token', responseJson['token']);
 
       // Log success
       debugPrint('Registered: $username');
@@ -93,103 +96,89 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   @override
-Widget build(BuildContext context) {
-  final theme = Theme.of(context);
-  final colorScheme = theme.colorScheme;
-  
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text('Register'),
-      backgroundColor: colorScheme.primaryContainer,
-      foregroundColor: colorScheme.onPrimaryContainer,
-      actions: [settingsButton(context)],
-    ),
-    body: Container(
-      color: colorScheme.surface,
-      child: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: isLoading
-                ? CircularProgressIndicator(color: colorScheme.primary)
-                : Column(
-                    children: [
-                      Text(
-                        'Create an Account',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          color: colorScheme.onSurface,
-                          fontWeight: FontWeight.bold,
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(localizations.register),
+        backgroundColor: colorScheme.primaryContainer,
+        foregroundColor: colorScheme.onPrimaryContainer,
+        actions: [settingsButton(context)],
+      ),
+      body: Container(
+        color: colorScheme.surface,
+        child: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : Column(
+                      children: [
+                        Text(
+                          localizations.createAccount,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Card(
-                        color: colorScheme.surfaceContainerHighest,
-                        elevation: 2,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              children: [
-                                TextFormField(
-                                  controller: _nameController,
-                                  style: TextStyle(color: colorScheme.onSurface),
-                                  decoration: InputDecoration(
-                                    labelText: 'Username',
-                                    labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-                                    enabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: colorScheme.outline),
+                        const SizedBox(height: 16),
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                children: [
+                                  TextFormField(
+                                    controller: _nameController,
+                                    decoration: InputDecoration(
+                                      labelText: localizations.username,
                                     ),
+                                    validator: (value) =>
+                                        value == null || value.isEmpty
+                                        ? localizations.enterUsername
+                                        : null,
                                   ),
-                                  validator: (value) => value?.isEmpty ?? true
-                                      ? 'Enter username'
-                                      : null,
-                                ),
-                                const SizedBox(height: 12),
-                                TextFormField(
-                                  controller: _passwordController,
-                                  style: TextStyle(color: colorScheme.onSurface),
-                                  decoration: InputDecoration(
-                                    labelText: 'Password',
-                                    labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-                                    enabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: colorScheme.outline),
+                                  const SizedBox(height: 12),
+                                  TextFormField(
+                                    controller: _passwordController,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    decoration: InputDecoration(
+                                      labelText: localizations.password,
                                     ),
+                                    obscureText: true,
+                                    validator: (value) =>
+                                        value != null && value.length >= 6
+                                        ? null
+                                        : localizations.min6chars,
                                   ),
-                                  obscureText: true,
-                                  validator: (value) => value != null && value.length >= 6
-                                      ? null
-                                      : 'Min 6 characters',
-                                ),
-                                const SizedBox(height: 24),
-                                ElevatedButton(
-                                  onPressed: _submit,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: colorScheme.primary,
-                                    foregroundColor: colorScheme.onPrimary,
-                                    minimumSize: const Size(double.infinity, 50),
+                                  const SizedBox(height: 24),
+                                  ElevatedButton(
+                                    onPressed: _submit,
+                                    child: Text(localizations.submit),
                                   ),
-                                  child: const Text('Submit'),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextButton(
-                        onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: colorScheme.primary,
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () =>
+                              Navigator.pushReplacementNamed(context, '/login'),
+                          child: Text(localizations.haveAccount),
                         ),
-                        child: const Text('Already have an account? Login'),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

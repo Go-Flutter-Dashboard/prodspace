@@ -1,0 +1,20 @@
+{
+  "appTitle": "Ваш рабочий стол",
+  "login": "Войти",
+  "register": "Регистрация",
+  "username": "Имя пользователя",
+  "password": "Пароль",
+  "loginToAccount": "Вход в аккаунт",
+  "dontHaveAccount": "Нет аккаунта? Зарегистрируйтесь",
+  "enterUsername": "Введите имя пользователя",
+  "min6chars": "Минимум 6 символов",
+  "darkMode": "Темная тема",
+  "useSystemTheme": "Использовать системную тему",
+  "settings": "Настройки", 
+  "darkModeEnabled": "Темный режим включен",
+  "lightModeEnabled": "Светлый режим включен",
+  "systemModeEnabled": "Системная тема включена",
+  "createAccount": "Создать аккаунт",
+  "submit": "Отправить",
+  "haveAccount": "Уже есть аккаунт? Войти"
+} 

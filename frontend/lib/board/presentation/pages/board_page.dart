@@ -14,6 +14,9 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
 import 'package:flutter/gestures.dart';
 import 'package:prodspace/settings/presentations/widgets/settings_btn.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:hive/hive.dart';
 
 class BoardPage extends StatefulWidget {
   const BoardPage({super.key});
@@ -25,6 +28,8 @@ class BoardPage extends StatefulWidget {
 class _BordPageState extends State<BoardPage> {
   final List<BoardObject> _objects = [];
   final List<DrawPath> _paths = [];
+  // Очередь на отправку
+  final List<BoardObject> _sendQueue = [];
   ToolType _selectedTool = ToolType.selection;
   int? _draggingObjectIndex;
   Set<int> _selectedObjectIndices = {};
@@ -61,35 +66,41 @@ class _BordPageState extends State<BoardPage> {
     switch (_selectedTool) {
       case ToolType.rectangle:
         setState(() {
-          _objects.add(BoardObject(
+          final obj = BoardObject(
             type: BoardObjectType.rectangle,
             position: boardPos,
             size: const Size(120, 80),
             color: _rectColor,
-          ));
+          );
+          _objects.add(obj);
+          _sendQueue.add(obj);
         });
         break;
       case ToolType.circle:
         setState(() {
-          _objects.add(BoardObject(
+          final obj = BoardObject(
             type: BoardObjectType.circle,
             position: boardPos,
             size: const Size(90, 90),
             color: _circleColor,
-          ));
+          );
+          _objects.add(obj);
+          _sendQueue.add(obj);
         });
         break;
       case ToolType.text:
         final text = await _showTextInputDialog();
         if (text != null && text.isNotEmpty) {
           setState(() {
-            _objects.add(BoardObject(
+            final obj = BoardObject(
               type: BoardObjectType.text,
               position: boardPos,
               size: const Size(160, 50),
               color: _textColor,
               text: text,
-            ));
+            );
+            _objects.add(obj);
+            _sendQueue.add(obj);
           });
         }
         break;
@@ -108,13 +119,15 @@ class _BordPageState extends State<BoardPage> {
         if (pickedFile != null) {
           final bytes = await pickedFile.readAsBytes();
           setState(() {
-            _objects.add(BoardObject(
+            final obj = BoardObject(
               type: BoardObjectType.image,
               position: boardPos,
               size: const Size(160, 120),
               color: Colors.transparent,
               imageBytes: bytes,
-            ));
+            );
+            _objects.add(obj);
+            _sendQueue.add(obj);
           });
         }
         break;
@@ -148,15 +161,17 @@ class _BordPageState extends State<BoardPage> {
     if (_selectedTool == ToolType.draw) {
       setState(() {
         _isDrawing = true;
-        final Offset boardPos = details.localFocalPoint / _boardSize.width * 2000;
-        _currentPath = DrawPath([
-          boardPos
-        ], _drawColor, 3.0);
+        final Offset boardPos =
+            details.localFocalPoint / _boardSize.width * 2000;
+        _currentPath = DrawPath([boardPos], _drawColor, 3.0);
         _paths.add(_currentPath!);
       });
       return;
     }
-    _draggingObjectIndex = BoardUtils.findObjectAt(details.localFocalPoint, _objects);
+    _draggingObjectIndex = BoardUtils.findObjectAt(
+      details.localFocalPoint,
+      _objects,
+    );
     if (_draggingObjectIndex != null) {
       _dragStartLocal = details.localFocalPoint;
       _dragStartObjectPos = _objects[_draggingObjectIndex!].position;
@@ -166,17 +181,23 @@ class _BordPageState extends State<BoardPage> {
   void _onScaleUpdate(ScaleUpdateDetails details) {
     if (_selectedTool == ToolType.draw && _isDrawing && _currentPath != null) {
       setState(() {
-        final Offset boardPos = details.localFocalPoint / _boardSize.width * 2000;
+        final Offset boardPos =
+            details.localFocalPoint / _boardSize.width * 2000;
         _currentPath!.points.add(boardPos);
       });
       return;
     }
-    if (_draggingObjectIndex != null && _dragStartLocal != null && _dragStartObjectPos != null && details.pointerCount == 1) {
+    if (_draggingObjectIndex != null &&
+        _dragStartLocal != null &&
+        _dragStartObjectPos != null &&
+        details.pointerCount == 1) {
       setState(() {
-        final delta = (details.localFocalPoint - _dragStartLocal!) / _boardSize.width * 2000;
-        _objects[_draggingObjectIndex!] = _objects[_draggingObjectIndex!].copyWith(
-          position: _dragStartObjectPos! + delta,
-        );
+        final delta =
+            (details.localFocalPoint - _dragStartLocal!) /
+            _boardSize.width *
+            2000;
+        _objects[_draggingObjectIndex!] = _objects[_draggingObjectIndex!]
+            .copyWith(position: _dragStartObjectPos! + delta);
       });
     }
   }
@@ -254,7 +275,9 @@ class _BordPageState extends State<BoardPage> {
     final selectedObjs = <int>{};
     for (int i = 0; i < _objects.length; i++) {
       final objRect = _objects[i].position & _objects[i].size;
-      if (box.overlaps(objRect) || box.contains(objRect.topLeft) || box.contains(objRect.bottomRight)) {
+      if (box.overlaps(objRect) ||
+          box.contains(objRect.topLeft) ||
+          box.contains(objRect.bottomRight)) {
         selectedObjs.add(i);
       }
     }
@@ -268,8 +291,6 @@ class _BordPageState extends State<BoardPage> {
     _selectedObjectIndices = selectedObjs;
     _selectedPathIndices = selectedPaths;
   }
-
-
 
   void _deleteSelected() {
     setState(() {
@@ -298,10 +319,18 @@ class _BordPageState extends State<BoardPage> {
 
   // Преобразование координат экрана в координаты доски
   Offset _screenToBoardCoordinates(Offset screenPos) {
-    return BoardUtils.screenToBoardCoordinates(screenPos, _canvasOffset, _canvasScale);
+    return BoardUtils.screenToBoardCoordinates(
+      screenPos,
+      _canvasOffset,
+      _canvasScale,
+    );
   }
 
-  void _handleResize(int idx, ResizeDirection direction, DragUpdateDetails details) {
+  void _handleResize(
+    int idx,
+    ResizeDirection direction,
+    DragUpdateDetails details,
+  ) {
     setState(() {
       final obj = _objects[idx];
       final delta = details.delta;
@@ -340,11 +369,72 @@ class _BordPageState extends State<BoardPage> {
     });
   }
 
+  // Функция отправки только объектов из очереди
+  Future<void> _sendBoardToBackend() async {
+    final box = await Hive.openBox('user_parameters');
+    final token = box.get('token');
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Токен не найден!')),
+      );
+      return;
+    }
+
+    // Копируем очередь, чтобы не было проблем при изменении во время отправки
+    final List<BoardObject> queueCopy = List.from(_sendQueue);
+    for (int i = 0; i < queueCopy.length; i++) {
+      final boardData = queueCopy[i].toJson(zIndex: i + 1);
+      print('boardData: ' + jsonEncode(boardData));
+
+      try {
+        final response = await http.post(
+          Uri.parse('http://localhost:3000/workspaces/my/items'),
+          headers: {
+            'Authorization': "Bearer $token",
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode(boardData),
+        );
+        if (response.statusCode == 200) {
+          setState(() {
+            _sendQueue.remove(queueCopy[i]); // Удаляем из очереди после успешной отправки
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Объект ${i + 1} успешно отправлен!')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Ошибка отправки объекта ${i + 1}: ${response.body}')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка соединения при отправке объекта ${i + 1}: ${e.toString()}')),
+        );
+      }
+
+      if (i < queueCopy.length - 1) {
+        await Future.delayed(const Duration(seconds: 3));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final hasSelection = _selectedObjectIndices.isNotEmpty || _selectedPathIndices.isNotEmpty;
+    final hasSelection =
+        _selectedObjectIndices.isNotEmpty || _selectedPathIndices.isNotEmpty;
     return Scaffold(
-      appBar: AppBar(title: const Text('Интерактивная доска'), actions: [settingsButton(context)],),
+      appBar: AppBar(
+        title: const Text('Интерактивная доска'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            tooltip: 'Сохранить доску',
+            onPressed: _sendBoardToBackend,
+          ),
+          settingsButton(context),
+        ],
+      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final Offset effectiveOffset = _canvasOffset;
@@ -367,8 +457,11 @@ class _BordPageState extends State<BoardPage> {
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTapUp: (details) {
-                      final boardPos = _screenToBoardCoordinates(details.localPosition);
-                      if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
+                      final boardPos = _screenToBoardCoordinates(
+                        details.localPosition,
+                      );
+                      if (!BoardUtils.isInsideBoard(boardPos, _boardSize))
+                        return;
                       _onTapBoard(boardPos);
                     },
                     onScaleStart: (details) {
@@ -377,52 +470,84 @@ class _BordPageState extends State<BoardPage> {
                         _dragStartObjectPos = _canvasOffset;
                         _initialScale = _canvasScale;
                       } else if (_selectedTool == ToolType.selection) {
-                        final boardPos = _screenToBoardCoordinates(details.localFocalPoint);
-                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
+                        final boardPos = _screenToBoardCoordinates(
+                          details.localFocalPoint,
+                        );
+                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize))
+                          return;
                         final idx = BoardUtils.findObjectAt(boardPos, _objects);
                         final pathIdx = BoardUtils.findPathAt(boardPos, _paths);
-                        if (idx != null && _selectedObjectIndices.contains(idx)) {
+                        if (idx != null &&
+                            _selectedObjectIndices.contains(idx)) {
                           _dragStartPointer = boardPos;
                           _dragStartPositions = {
                             for (final i in _selectedObjectIndices)
-                              i: _objects[i].position
+                              i: _objects[i].position,
                           };
                           _dragStartPathPoints = {
                             for (final i in _selectedPathIndices)
-                              i: List<Offset>.from(_paths[i].points)
+                              i: List<Offset>.from(_paths[i].points),
                           };
-                        } else if (pathIdx != null && _selectedPathIndices.contains(pathIdx)) {
+                        } else if (pathIdx != null &&
+                            _selectedPathIndices.contains(pathIdx)) {
                           _dragStartPointer = boardPos;
                           _dragStartPositions = {};
                           _dragStartPathPoints = {
                             for (final i in _selectedPathIndices)
-                              i: List<Offset>.from(_paths[i].points)
+                              i: List<Offset>.from(_paths[i].points),
                           };
                         } else if (idx == null && pathIdx == null) {
                           _onSelectionBoxStart(boardPos);
                         }
                       } else if (_selectedTool == ToolType.draw) {
-                        _onScaleStart(ScaleStartDetails(localFocalPoint: _screenToBoardCoordinates(details.localFocalPoint)));
+                        _onScaleStart(
+                          ScaleStartDetails(
+                            localFocalPoint: _screenToBoardCoordinates(
+                              details.localFocalPoint,
+                            ),
+                          ),
+                        );
                       } else {
-                        _onScaleStart(ScaleStartDetails(localFocalPoint: _screenToBoardCoordinates(details.localFocalPoint)));
+                        _onScaleStart(
+                          ScaleStartDetails(
+                            localFocalPoint: _screenToBoardCoordinates(
+                              details.localFocalPoint,
+                            ),
+                          ),
+                        );
                       }
                     },
                     onScaleUpdate: (details) {
-                      if (_selectedTool == ToolType.pan && _dragStartLocal != null && _dragStartObjectPos != null) {
+                      if (_selectedTool == ToolType.pan &&
+                          _dragStartLocal != null &&
+                          _dragStartObjectPos != null) {
                         setState(() {
-                          _canvasScale = (_initialScale * details.scale).clamp(0.5, 3.0);
-                          final Offset rawOffset = _dragStartObjectPos! + (details.focalPoint - _dragStartLocal!);
+                          _canvasScale = (_initialScale * details.scale).clamp(
+                            0.5,
+                            3.0,
+                          );
+                          final Offset rawOffset =
+                              _dragStartObjectPos! +
+                              (details.focalPoint - _dragStartLocal!);
                           _canvasOffset = rawOffset;
                         });
-                      } else if (_selectedTool == ToolType.selection && _dragStartPointer != null && (_dragStartPositions != null || _dragStartPathPoints != null)) {
-                        final boardPos = _screenToBoardCoordinates(details.localFocalPoint);
-                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
+                      } else if (_selectedTool == ToolType.selection &&
+                          _dragStartPointer != null &&
+                          (_dragStartPositions != null ||
+                              _dragStartPathPoints != null)) {
+                        final boardPos = _screenToBoardCoordinates(
+                          details.localFocalPoint,
+                        );
+                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize))
+                          return;
                         final delta = (boardPos - _dragStartPointer!);
                         setState(() {
                           if (_dragStartPositions != null) {
                             for (final i in _selectedObjectIndices) {
                               final start = _dragStartPositions![i]!;
-                              _objects[i] = _objects[i].copyWith(position: start + delta);
+                              _objects[i] = _objects[i].copyWith(
+                                position: start + delta,
+                              );
                             }
                           }
                           if (_dragStartPathPoints != null) {
@@ -436,29 +561,51 @@ class _BordPageState extends State<BoardPage> {
                             }
                           }
                         });
-                      } else if (_selectedTool == ToolType.selection && _selectionBoxStart != null) {
-                        final boardPos = _screenToBoardCoordinates(details.localFocalPoint);
-                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
+                      } else if (_selectedTool == ToolType.selection &&
+                          _selectionBoxStart != null) {
+                        final boardPos = _screenToBoardCoordinates(
+                          details.localFocalPoint,
+                        );
+                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize))
+                          return;
                         _onSelectionBoxUpdate(boardPos);
                       } else if (_selectedTool == ToolType.draw && _isDrawing) {
-                        _onScaleUpdate(ScaleUpdateDetails(localFocalPoint: _screenToBoardCoordinates(details.localFocalPoint)));
-                      } else if (_draggingObjectIndex != null && _dragStartLocal != null) {
-                        _onScaleUpdate(ScaleUpdateDetails(localFocalPoint: _screenToBoardCoordinates(details.localFocalPoint)));
+                        _onScaleUpdate(
+                          ScaleUpdateDetails(
+                            localFocalPoint: _screenToBoardCoordinates(
+                              details.localFocalPoint,
+                            ),
+                          ),
+                        );
+                      } else if (_draggingObjectIndex != null &&
+                          _dragStartLocal != null) {
+                        _onScaleUpdate(
+                          ScaleUpdateDetails(
+                            localFocalPoint: _screenToBoardCoordinates(
+                              details.localFocalPoint,
+                            ),
+                          ),
+                        );
                       }
                     },
                     onScaleEnd: (details) {
                       if (_selectedTool == ToolType.pan) {
                         _dragStartLocal = null;
                         _dragStartObjectPos = null;
-                      } else if (_selectedTool == ToolType.selection && _dragStartPointer != null && (_dragStartPositions != null || _dragStartPathPoints != null)) {
+                      } else if (_selectedTool == ToolType.selection &&
+                          _dragStartPointer != null &&
+                          (_dragStartPositions != null ||
+                              _dragStartPathPoints != null)) {
                         _dragStartPointer = null;
                         _dragStartPositions = null;
                         _dragStartPathPoints = null;
-                      } else if (_selectedTool == ToolType.selection && _selectionBoxStart != null) {
+                      } else if (_selectedTool == ToolType.selection &&
+                          _selectionBoxStart != null) {
                         _onSelectionBoxEnd();
                       } else if (_selectedTool == ToolType.draw && _isDrawing) {
                         _onScaleEnd(ScaleEndDetails());
-                      } else if (_draggingObjectIndex != null && _dragStartLocal != null) {
+                      } else if (_draggingObjectIndex != null &&
+                          _dragStartLocal != null) {
                         _onScaleEnd(ScaleEndDetails());
                       }
                     },
@@ -477,7 +624,10 @@ class _BordPageState extends State<BoardPage> {
                                 height: _boardSize.height,
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  border: Border.all(color: Colors.grey, width: 3),
+                                  border: Border.all(
+                                    color: Colors.grey,
+                                    width: 3,
+                                  ),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black12,
@@ -491,7 +641,8 @@ class _BordPageState extends State<BoardPage> {
                               ..._paths.asMap().entries.map((entry) {
                                 final idx = entry.key;
                                 final path = entry.value;
-                                final isSelected = _selectedPathIndices.contains(idx);
+                                final isSelected = _selectedPathIndices
+                                    .contains(idx);
                                 return Stack(
                                   children: [
                                     CustomPaint(
@@ -500,14 +651,22 @@ class _BordPageState extends State<BoardPage> {
                                     ),
                                     if (isSelected)
                                       Positioned(
-                                        left: BoardUtils.boundingBoxForPath(path).left,
-                                        top: BoardUtils.boundingBoxForPath(path).top,
+                                        left: BoardUtils.boundingBoxForPath(
+                                          path,
+                                        ).left,
+                                        top: BoardUtils.boundingBoxForPath(
+                                          path,
+                                        ).top,
                                         child: DashedRect(
                                           color: Colors.blue,
                                           strokeWidth: 2,
                                           gap: 6,
-                                          width: BoardUtils.boundingBoxForPath(path).width,
-                                          height: BoardUtils.boundingBoxForPath(path).height,
+                                          width: BoardUtils.boundingBoxForPath(
+                                            path,
+                                          ).width,
+                                          height: BoardUtils.boundingBoxForPath(
+                                            path,
+                                          ).height,
                                         ),
                                       ),
                                   ],
@@ -517,31 +676,51 @@ class _BordPageState extends State<BoardPage> {
                               ..._objects.asMap().entries.map((entry) {
                                 final obj = entry.value;
                                 final idx = entry.key;
-                                final isSelected = _selectedObjectIndices.contains(idx);
+                                final isSelected = _selectedObjectIndices
+                                    .contains(idx);
                                 return Positioned(
                                   left: obj.position.dx,
                                   top: obj.position.dy,
                                   child: BoardObjectWidget(
                                     object: obj,
                                     isSelected: isSelected,
-                                    onResize: isSelected ? (direction, details) {
-                                      _handleResize(idx, direction, details);
-                                    } : null,
+                                    onResize: isSelected
+                                        ? (direction, details) {
+                                            _handleResize(
+                                              idx,
+                                              direction,
+                                              details,
+                                            );
+                                          }
+                                        : null,
                                   ),
                                 );
                               }).toList(),
                               // Selection box
-                              if (_selectionBoxStart != null && _selectionBoxEnd != null)
+                              if (_selectionBoxStart != null &&
+                                  _selectionBoxEnd != null)
                                 Positioned(
-                                  left: min(_selectionBoxStart!.dx, _selectionBoxEnd!.dx),
-                                  top: min(_selectionBoxStart!.dy, _selectionBoxEnd!.dy),
+                                  left: min(
+                                    _selectionBoxStart!.dx,
+                                    _selectionBoxEnd!.dx,
+                                  ),
+                                  top: min(
+                                    _selectionBoxStart!.dy,
+                                    _selectionBoxEnd!.dy,
+                                  ),
                                   child: IgnorePointer(
                                     child: DashedRect(
                                       color: Colors.blue,
                                       strokeWidth: 2,
                                       gap: 6,
-                                      width: (_selectionBoxStart!.dx - _selectionBoxEnd!.dx).abs(),
-                                      height: (_selectionBoxStart!.dy - _selectionBoxEnd!.dy).abs(),
+                                      width:
+                                          (_selectionBoxStart!.dx -
+                                                  _selectionBoxEnd!.dx)
+                                              .abs(),
+                                      height:
+                                          (_selectionBoxStart!.dy -
+                                                  _selectionBoxEnd!.dy)
+                                              .abs(),
                                     ),
                                   ),
                                 ),
@@ -562,7 +741,8 @@ class _BordPageState extends State<BoardPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildToolbar(),
-                    if (_selectedTool == ToolType.draw) _buildDrawColorPicker(context),
+                    if (_selectedTool == ToolType.draw)
+                      _buildDrawColorPicker(context),
                     if (hasSelection) _buildSelectionActions(context),
                   ],
                 ),
@@ -586,8 +766,6 @@ class _BordPageState extends State<BoardPage> {
       onTextColorChanged: (color) => setState(() => _textColor = color),
     );
   }
-
-
 
   Widget _buildDrawColorPicker(BuildContext context) {
     return DrawColorPicker(
