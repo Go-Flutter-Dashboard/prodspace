@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"admin/internal/database"
-	"admin/internal/database/schemas"
-	"admin/internal/models"
+	"backend/internal/database"
+	"backend/internal/database/schemas"
+	"backend/internal/models"
 
 	"errors"
 
@@ -11,7 +11,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// GetUser
 // @Summary Get a user by ID
 // @Description Retrieve a user by their unique ID
 // @Tags users
@@ -46,9 +45,8 @@ func GetUser(c *fiber.Ctx) error {
 	}
 
 	userRead := models.UserRead{
-		ID:       user.ID,
-		Login:    user.Login,
-		UserName: user.Name,
+		ID:    user.ID,
+		Login: user.Login,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(userRead)
@@ -70,9 +68,6 @@ type userQueryParams struct {
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Number of users per page" default(10)
-// @Param user_status query string false "User status to fliter by" default(null)
-// @Param subscription_plan query string false "Subscription plan to filter by" default(null)
-// @Param subscription_status query string false "Subscription status to filter by" default(null)
 // @Success 200 {object} []models.UserRead
 // @Failure 400 {object} models.ErrorResponse "Malformed query parameters"
 // @Failure 500 {object} models.ErrorResponse "Internal Server Error"
@@ -106,9 +101,9 @@ func GetUsersPaginate(c *fiber.Ctx) error {
 	userReads := make([]models.UserRead, len(users))
 	for i, user := range users {
 		userReads[i] = models.UserRead{
-			ID:                       user.ID,
-			Login:                    user.Login,
-			UserName:                 user.Name,
+			ID:          user.ID,
+			Login:       user.Login,
+			WorkspaceID: user.WorkspaceID,
 		}
 	}
 
@@ -135,4 +130,66 @@ func GetUserCount(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(models.CountResponse{
 		Count: count,
 	})
+}
+
+// @Summary Authenticate user
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param credentials body models.UserCreate true "Login credentials"
+// @Success 200 {object} models.AuthResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /login [post]
+func LoginUser(c *fiber.Ctx) error {
+    // Parse request
+    loginReq := new(models.UserCreate)
+    if err := c.BodyParser(loginReq); err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
+            Error: "invalid request format",
+        })
+    }
+
+    // Validate input
+    if loginReq.Login == "" || loginReq.Password == "" {
+        return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
+            Error: "login and password are required",
+        })
+    }
+
+    // Find user by login
+    var user schemas.User
+    if err := database.DB.Where("login = ?", loginReq.Login).First(&user).Error; err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
+                Error: "invalid credentials", // Generic message for security
+            })
+        }
+        return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{
+            Error: "failed to authenticate user",
+        })
+    }
+
+    // Verify password
+    if !database.VerifyPassword(user.PasswordHash, loginReq.Login, loginReq.Password) {
+        return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
+            Error: "invalid credentials",
+        })
+    }
+
+    // Generate JWT token
+    token, err := generateJWTToken(&user)
+    if err != nil {
+        return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{
+            Error: "failed to generate authentication token",
+        })
+    }
+
+    // Return successful response
+    return c.JSON(models.AuthResponse{
+        Message: "login successful",
+        Token:   token,
+        UserID:  user.ID,
+    })
 }

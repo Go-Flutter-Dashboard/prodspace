@@ -1,16 +1,15 @@
 package handlers
 
 import (
-	"admin/internal/database"
-	"admin/internal/database/schemas"
-	"admin/internal/models"
+	"backend/internal/database"
+	"backend/internal/database/schemas"
+	"backend/internal/models"
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
-// UpdateUser
 // @Summary Update an existing user by ID
 // @Tags users
 // @Accept json
@@ -30,8 +29,8 @@ func UpdateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	input := &models.UserUpdate{}
-	if err := c.BodyParser(&input); err != nil {
+	userUpdate := &models.UserUpdate{}
+	if err := c.BodyParser(&userUpdate); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
 			Error: "invalid request body",
 		})
@@ -48,19 +47,30 @@ func UpdateUser(c *fiber.Ctx) error {
 			Error: "failed to query user",
 		})
 	}
-
-	// Update user fields only if they are provided in the input
-	if input.Login != nil {
-		user.Login = *input.Login
+	
+	if userUpdate.OldPassword == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
+			Error: "old password required to update the user",
+		})
 	}
-
-	if input.Name != nil {
-		user.Name = *input.Name
+	
+	if userUpdate.Login == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
+			Error: "login required",
+		})
 	}
-
-	if input.Password != nil {
-		hashed := database.Hash(*input.Login, *input.Password)
-		user.PasswordHash = hashed
+	
+	inputHash := database.Hash(userUpdate.Login, userUpdate.OldPassword)
+	if user.PasswordHash != inputHash {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
+			Error: "invalid login or old password",
+		})
+	}
+	
+	user.Login = userUpdate.Login
+	
+	if userUpdate.NewPassword != nil {
+		user.PasswordHash = database.Hash(user.Login, *userUpdate.NewPassword)
 	}
 
 	if err := database.DB.Save(&user).Error; err != nil {
