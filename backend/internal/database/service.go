@@ -92,6 +92,9 @@ func InitDatabase() error {
 		&schemas.TextItem{},
 		&schemas.TodoListField{},
 		&schemas.TodoListItem{},
+		&schemas.ShapeItem{},
+		&schemas.Point{},
+		&schemas.DrawingItem{},
 	)
 	
 	if err != nil {

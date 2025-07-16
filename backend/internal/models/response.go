@@ -19,6 +19,19 @@ type ImageItemRead struct {
 	Bytes string `json:"bytes"`
 }
 
+type ShapeItemRead struct {
+	Name string `json:"name"`
+}
+
+type DrawingPointRead struct {
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
+}
+
+type DrawingItemRead struct {
+	Points []DrawingPointRead `json:"points"`
+}
+
 type ItemRead struct {
 	ID           uint                     `json:"id"`
 	PositionX    float64                  `json:"position_x"`
@@ -27,9 +40,13 @@ type ItemRead struct {
 	WorkspaceID  uint                     `json:"workspace_id"`
 	Width        float64                  `json:"width"`
 	Height       float64                  `json:"height"`
+	Color        string                   `json:"color"`
+	Scale        float64                  `json:"scale"`
 	TextItem     *TextItemRead            `json:"text,omitempty"`
 	ImageItem    *ImageItemRead           `json:"image,omitempty"`
-	TodoListItem []TodoListItemFieldRead `json:"todo_list,omitempty"`
+	TodoListItem []TodoListItemFieldRead  `json:"todo_list,omitempty"`
+	ShapeItem    *ShapeItemRead           `json:"shape,omitempty"`
+	DrawingItem  *DrawingItemRead         `json:"drawing,omitempty"`
 }
 
 type WorkspaceRead struct {

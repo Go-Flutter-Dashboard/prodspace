@@ -39,29 +39,33 @@ func AppendWorkspaceItem(c *fiber.Ctx) error {
         })
     }
 
-    // Validate exactly one item type is provided
-    itemTypes := 0
-    if itemCreate.TextItem != nil { itemTypes++ }
-    if itemCreate.ImageItem != nil { itemTypes++ }
-    if itemCreate.TodoList != nil { itemTypes++ }
-    
-    if itemTypes != 1 {
-        return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
-            Error: "must provide exactly one item type (text, image, or todo list)",
-        })
-    }
+	// Validate exactly one item type is provided
+	itemTypes := 0
+	if itemCreate.TextItem != nil { itemTypes++ }
+	if itemCreate.ImageItem != nil { itemTypes++ }
+	if itemCreate.TodoList != nil { itemTypes++ }
+	if itemCreate.ShapeItem != nil { itemTypes++ }
+	if itemCreate.DrawingItem != nil { itemTypes++ }
+	
+	if itemTypes != 1 {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
+			Error: "must provide exactly one item type (text, image, todo list, shape, or drawing)",
+		})
+	}
 
-    // Create base item
-    item := schemas.Item{
-        WorkspaceID: uint(userID),
-        PositionX:   itemCreate.PositionX,
-        PositionY:   itemCreate.PositionY,
-        ZIndex:      itemCreate.ZIndex,
-    }
+	// Create base item
+	item := schemas.Item{
+		WorkspaceID: uint(userID),
+		PositionX:   itemCreate.PositionX,
+		PositionY:   itemCreate.PositionY,
+		ZIndex:      itemCreate.ZIndex,
+		Color:       itemCreate.Color,
+		Scale:       itemCreate.Scale,
+	}
 
-    // Handle different item types
-    switch {
-    case itemCreate.TextItem != nil:
+	// Handle different item types except ShapeItem
+	switch {
+	case itemCreate.TextItem != nil:
 		
 		if itemCreate.TextItem.Content == "" {
 			return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
@@ -69,29 +73,44 @@ func AppendWorkspaceItem(c *fiber.Ctx) error {
 			})
 		}
 		
-        item.TextItem = &schemas.TextItem{
-            Content: itemCreate.TextItem.Content,
-        }
-        
-    case itemCreate.ImageItem != nil:
-        item.ImageItem = &schemas.ImageItem{
-            Bytes: itemCreate.ImageItem.Bytes,
-        }
-        
-    case itemCreate.TodoList != nil:
-        var fields []schemas.TodoListField
-        for _, f := range *itemCreate.TodoList {
-            fields = append(fields, schemas.TodoListField{
-                Done: f.Done,
-                TextItem: &schemas.TextItem{
-                    Content: f.Content,
-                },
-            })
-        }
-        item.ListItem = &schemas.TodoListItem{
-            TodoListFields: fields,
-        }
-    }
+		item.TextItem = &schemas.TextItem{
+			Content: itemCreate.TextItem.Content,
+		}
+		
+	case itemCreate.ImageItem != nil:
+		item.ImageItem = &schemas.ImageItem{
+			Bytes: itemCreate.ImageItem.Bytes,
+		}
+		
+	case itemCreate.TodoList != nil:
+		var fields []schemas.TodoListField
+		for _, f := range *itemCreate.TodoList {
+			fields = append(fields, schemas.TodoListField{
+				Done: f.Done,
+				TextItem: &schemas.TextItem{
+					Content: f.Content,
+				},
+			})
+		}
+		item.ListItem = &schemas.TodoListItem{
+			TodoListFields: fields,
+		}
+	case itemCreate.ShapeItem != nil:
+		item.ShapeItem = &schemas.ShapeItem{
+			Name:        itemCreate.ShapeItem.Name,
+		}
+	case itemCreate.DrawingItem != nil:
+		points := make([]schemas.Point, 0, len(itemCreate.DrawingItem.Points))
+		for _, p := range itemCreate.DrawingItem.Points {
+			points = append(points, schemas.Point{
+				X: p.X,
+				Y: p.Y,
+			})
+		}
+		item.DrawingItem = &schemas.DrawingItem{
+			Points: points,
+		}
+	}
 
     // Find workspace
     var workspace schemas.Workspace
@@ -146,14 +165,14 @@ func DeleteWorkspaceItem(c *fiber.Ctx) error {
     userID, err := c.ParamsInt("user_id")
     if err != nil || userID < 1 {
         return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
-            Error: "invalid user ID",
+            Error: "invalid user id",
         })
     }
 
     itemID, err := c.ParamsInt("item_id")
     if err != nil || itemID < 1 {
         return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
-            Error: "invalid item ID", 
+            Error: "invalid item id", 
         })
     }
 
@@ -229,6 +248,8 @@ func AppendMyWorkspaceItem(c *fiber.Ctx) error {
     if itemCreate.TextItem != nil { itemTypes++ }
     if itemCreate.ImageItem != nil { itemTypes++ }
     if itemCreate.TodoList != nil { itemTypes++ }
+    if itemCreate.ShapeItem != nil { itemTypes++ }
+    if itemCreate.DrawingItem != nil { itemTypes++ }
     
     if itemTypes != 1 {
         return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
@@ -242,9 +263,11 @@ func AppendMyWorkspaceItem(c *fiber.Ctx) error {
         PositionX:   itemCreate.PositionX,
         PositionY:   itemCreate.PositionY,
         ZIndex:      itemCreate.ZIndex,
+        Color:       itemCreate.Color,
+        Scale:       itemCreate.Scale,
     }
 
-    // Handle different item types
+    // Handle different item types except ShapeItem
     switch {
     case itemCreate.TextItem != nil:
 		
@@ -275,6 +298,21 @@ func AppendMyWorkspaceItem(c *fiber.Ctx) error {
         }
         item.ListItem = &schemas.TodoListItem{
             TodoListFields: fields,
+        }
+    case itemCreate.ShapeItem != nil:
+        item.ShapeItem = &schemas.ShapeItem{
+            Name:        itemCreate.ShapeItem.Name,
+        }
+    case itemCreate.DrawingItem != nil:
+        var points []schemas.Point
+        for _, p := range itemCreate.DrawingItem.Points {
+            points = append(points, schemas.Point{
+                X: p.X,
+                Y: p.Y,
+            })
+        }
+        item.DrawingItem = &schemas.DrawingItem{
+            Points: points,
         }
     }
 
@@ -338,7 +376,7 @@ func DeleteMyWorkspaceItem(c *fiber.Ctx) error {
     itemID, err := c.ParamsInt("item_id")
     if err != nil || itemID < 1 {
         return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
-            Error: "invalid item ID", 
+            Error: "invalid item id", 
         })
     }
 

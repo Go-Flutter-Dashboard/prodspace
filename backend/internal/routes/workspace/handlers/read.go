@@ -6,6 +6,7 @@ import (
 	middleware "backend/internal/middlewares"
 	"backend/internal/models"
 	"errors"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -36,6 +37,8 @@ func GetWorkspace(c *fiber.Ctx) error {
 		Preload("Items.TextItem").
 		Preload("Items.ImageItem").
 		Preload("Items.ListItem.TodoListFields.TextItem").
+		Preload("Items.ShapeItem").
+		Preload("Items.DrawingItem").
 		Joins("User").
 		First(&workspace, "user_id = ?", id).Error
 
@@ -59,6 +62,8 @@ func GetWorkspace(c *fiber.Ctx) error {
 			PositionY:   item.PositionY,
 			ZIndex:      item.ZIndex,
 			WorkspaceID: item.WorkspaceID,
+			Color:       item.Color,
+			Scale:       item.Scale,
 		}
 
 		// Handle text items
@@ -89,6 +94,27 @@ func GetWorkspace(c *fiber.Ctx) error {
 				}
 			}
 			itemRead.TodoListItem = listFields
+		}
+
+		// Handle shape items
+		if item.ShapeItem != nil {
+			itemRead.ShapeItem = &models.ShapeItemRead{
+				Name: item.ShapeItem.Name,
+			}
+		}
+
+		// Handle drawing items
+		if item.DrawingItem != nil {
+			points := make([]models.DrawingPointRead, 0, len(item.DrawingItem.Points))
+			for _, p := range item.DrawingItem.Points {
+				points = append(points, models.DrawingPointRead{
+					X: p.X,
+					Y: p.Y,
+				})
+			}
+			itemRead.DrawingItem = &models.DrawingItemRead{
+				Points: points,
+			}
 		}
 
 		itemReads = append(itemReads, itemRead)
@@ -130,6 +156,8 @@ func GetMyWorkspace(c *fiber.Ctx) error {
 		Preload("Items.TextItem").
 		Preload("Items.ImageItem").
 		Preload("Items.ListItem.TodoListFields.TextItem").
+		Preload("Items.ShapeItem").
+		Preload("Items.DrawingItem").
 		Joins("User").
 		First(&workspace, "user_id = ?", id).Error
 
@@ -185,9 +213,28 @@ func GetMyWorkspace(c *fiber.Ctx) error {
 			itemRead.TodoListItem = listFields
 		}
 
+		// Handle shape items
+		if item.ShapeItem != nil {
+			itemRead.ShapeItem = &models.ShapeItemRead{
+				Name: item.ShapeItem.Name,
+			}
+		}
+		
+		if item.DrawingItem != nil {
+			var pointReads []models.DrawingPointRead
+			for _, point := range item.DrawingItem.Points {
+				pointRead := models.DrawingPointRead{
+					X: point.X,
+					Y: point.Y,
+				}
+				pointReads = append(pointReads, pointRead)
+			}
+			itemRead.DrawingItem.Points = pointReads
+		}
+		
 		itemReads = append(itemReads, itemRead)
 	}
-
+	fmt.Println("Item reads: ", itemReads)
 	return c.Status(fiber.StatusOK).JSON(models.WorkspaceRead{
 		Items: itemReads,
 	})

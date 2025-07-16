@@ -20,15 +20,32 @@ type ImageItemCreate struct {
 }
 
 type TodoItemFieldCreate struct {
-	TextItemCreate
-	Done bool `json:"done"`
+	TextItemCreate `json:"text"`
+	Done bool `json:"done" example:"false"`
+}
+
+type ShapeItemCreate struct {
+	Name string `json:"name" example:"circle"`
+}
+
+type DrawingPointCreate struct {
+	X float64 `json:"x" example:"1.0"`
+	Y float64 `json:"y" example:"1.0"`
+}
+
+type DrawingItemCreate struct {
+	Points []DrawingPointCreate `json:"points"`
 }
 
 type ItemCreate struct {
-	PositionX float64                `json:"position_x"          example:"1.0"`
-	PositionY float64                `json:"position_y"          example:"1.0"`
-	ZIndex    uint                   `json:"z_index"             example:"1"`
-	TextItem  *TextItemCreate        `json:"text,omitempty"`
-	ImageItem *ImageItemCreate       `json:"image,omitempty"`
-	TodoList  *[]TodoItemFieldCreate `json:"todo_list,omitempty"`
+	PositionX  float64                 `json:"position_x"          example:"1.0"`
+	PositionY  float64                 `json:"position_y"          example:"1.0"`
+	ZIndex     uint                    `json:"z_index"             example:"1"`
+	Color      string                  `json:"color"               example:"#FFFFFF"`
+	Scale      float64                 `json:"scale"               example:"1.0"`
+	TextItem   *TextItemCreate         `json:"text,omitempty"`
+	ImageItem  *ImageItemCreate        `json:"image,omitempty"`
+	TodoList   *[]TodoItemFieldCreate `json:"todo_list,omitempty"`
+	ShapeItem  *ShapeItemCreate        `json:"shape,omitempty"`
+	DrawingItem *DrawingItemCreate     `json:"drawing,omitempty"`
 }

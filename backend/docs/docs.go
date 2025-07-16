@@ -712,6 +712,52 @@ const docTemplate = `{
                 }
             }
         },
+        "models.DrawingItemCreate": {
+            "type": "object",
+            "properties": {
+                "points": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DrawingPointCreate"
+                    }
+                }
+            }
+        },
+        "models.DrawingItemRead": {
+            "type": "object",
+            "properties": {
+                "points": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DrawingPointRead"
+                    }
+                }
+            }
+        },
+        "models.DrawingPointCreate": {
+            "type": "object",
+            "properties": {
+                "x": {
+                    "type": "number",
+                    "example": 1
+                },
+                "y": {
+                    "type": "number",
+                    "example": 1
+                }
+            }
+        },
+        "models.DrawingPointRead": {
+            "type": "object",
+            "properties": {
+                "x": {
+                    "type": "number"
+                },
+                "y": {
+                    "type": "number"
+                }
+            }
+        },
         "models.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -740,6 +786,13 @@ const docTemplate = `{
         "models.ItemCreate": {
             "type": "object",
             "properties": {
+                "color": {
+                    "type": "string",
+                    "example": "#FFFFFF"
+                },
+                "drawing": {
+                    "$ref": "#/definitions/models.DrawingItemCreate"
+                },
                 "image": {
                     "$ref": "#/definitions/models.ImageItemCreate"
                 },
@@ -750,6 +803,13 @@ const docTemplate = `{
                 "position_y": {
                     "type": "number",
                     "example": 1
+                },
+                "scale": {
+                    "type": "number",
+                    "example": 1
+                },
+                "shape": {
+                    "$ref": "#/definitions/models.ShapeItemCreate"
                 },
                 "text": {
                     "$ref": "#/definitions/models.TextItemCreate"
@@ -769,6 +829,12 @@ const docTemplate = `{
         "models.ItemRead": {
             "type": "object",
             "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "drawing": {
+                    "$ref": "#/definitions/models.DrawingItemRead"
+                },
                 "height": {
                     "type": "number"
                 },
@@ -783,6 +849,12 @@ const docTemplate = `{
                 },
                 "position_y": {
                     "type": "number"
+                },
+                "scale": {
+                    "type": "number"
+                },
+                "shape": {
+                    "$ref": "#/definitions/models.ShapeItemRead"
                 },
                 "text": {
                     "$ref": "#/definitions/models.TextItemRead"
@@ -813,6 +885,23 @@ const docTemplate = `{
                 }
             }
         },
+        "models.ShapeItemCreate": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "circle"
+                }
+            }
+        },
+        "models.ShapeItemRead": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "models.TextItemCreate": {
             "type": "object",
             "properties": {
@@ -833,12 +922,12 @@ const docTemplate = `{
         "models.TodoItemFieldCreate": {
             "type": "object",
             "properties": {
-                "content": {
-                    "type": "string",
-                    "example": "Hello, world!"
-                },
                 "done": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "example": false
+                },
+                "text": {
+                    "$ref": "#/definitions/models.TextItemCreate"
                 }
             }
         },

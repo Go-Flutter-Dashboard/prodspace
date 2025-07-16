@@ -23,6 +23,36 @@ definitions:
         example: Resource created successfully
         type: string
     type: object
+  models.DrawingItemCreate:
+    properties:
+      points:
+        items:
+          $ref: '#/definitions/models.DrawingPointCreate'
+        type: array
+    type: object
+  models.DrawingItemRead:
+    properties:
+      points:
+        items:
+          $ref: '#/definitions/models.DrawingPointRead'
+        type: array
+    type: object
+  models.DrawingPointCreate:
+    properties:
+      x:
+        example: 1
+        type: number
+      "y":
+        example: 1
+        type: number
+    type: object
+  models.DrawingPointRead:
+    properties:
+      x:
+        type: number
+      "y":
+        type: number
+    type: object
   models.ErrorResponse:
     properties:
       error:
@@ -41,6 +71,11 @@ definitions:
     type: object
   models.ItemCreate:
     properties:
+      color:
+        example: '#FFFFFF'
+        type: string
+      drawing:
+        $ref: '#/definitions/models.DrawingItemCreate'
       image:
         $ref: '#/definitions/models.ImageItemCreate'
       position_x:
@@ -49,6 +84,11 @@ definitions:
       position_y:
         example: 1
         type: number
+      scale:
+        example: 1
+        type: number
+      shape:
+        $ref: '#/definitions/models.ShapeItemCreate'
       text:
         $ref: '#/definitions/models.TextItemCreate'
       todo_list:
@@ -61,6 +101,10 @@ definitions:
     type: object
   models.ItemRead:
     properties:
+      color:
+        type: string
+      drawing:
+        $ref: '#/definitions/models.DrawingItemRead'
       height:
         type: number
       id:
@@ -71,6 +115,10 @@ definitions:
         type: number
       position_y:
         type: number
+      scale:
+        type: number
+      shape:
+        $ref: '#/definitions/models.ShapeItemRead'
       text:
         $ref: '#/definitions/models.TextItemRead'
       todo_list:
@@ -90,6 +138,17 @@ definitions:
         example: Descriptive message
         type: string
     type: object
+  models.ShapeItemCreate:
+    properties:
+      name:
+        example: circle
+        type: string
+    type: object
+  models.ShapeItemRead:
+    properties:
+      name:
+        type: string
+    type: object
   models.TextItemCreate:
     properties:
       content:
@@ -103,11 +162,11 @@ definitions:
     type: object
   models.TodoItemFieldCreate:
     properties:
-      content:
-        example: Hello, world!
-        type: string
       done:
+        example: false
         type: boolean
+      text:
+        $ref: '#/definitions/models.TextItemCreate'
     type: object
   models.TodoListItemFieldRead:
     properties:
