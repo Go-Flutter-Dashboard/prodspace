@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"backend/config"
 	"backend/internal/database/schemas"
 
 	"github.com/dgrijalva/jwt-go"
@@ -27,6 +28,7 @@ func TestHashAndVerifyPassword(t *testing.T) {
 }
 
 func TestCreateTokenForUser(t *testing.T) {
+	// Remove usage of jwtSecret variable if any, since it was removed from service.go
 	user := schemas.User{
 		ID:    1,
 		Login: "testuser",
@@ -38,7 +40,7 @@ func TestCreateTokenForUser(t *testing.T) {
 
 	// Optionally, parse token to verify claims
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-		return []byte(jwtSecret), nil
+		return []byte(config.C.JwtSecret), nil
 	})
 	assert.NoError(t, err, "Token parsing should not error")
 	if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok && parsedToken.Valid {

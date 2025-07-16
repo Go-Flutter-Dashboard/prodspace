@@ -22,7 +22,6 @@ var DB *gorm.DB
 
 var (
 	secret     = config.C.Secret
-	jwtSecret  = config.C.JwtSecret
 	dbHost     = config.C.DbHost
 	dbUser     = config.C.DbUser
 	dbPassword = config.C.DbPassword
@@ -49,8 +48,9 @@ func CreateTokenForUser(user schemas.User) (string, error) {
 		"exp":   time.Now().Add(time.Hour * 72).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(jwtSecret))
+	return token.SignedString([]byte(config.C.JwtSecret))
 }
+
 
 func InitDatabase() error {
 	var err error
