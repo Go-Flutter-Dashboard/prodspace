@@ -60,12 +60,44 @@ extension DrawPathJson on DrawPath {
 }
 
 extension BoardObjectJson on BoardObject {
-  Map<String, dynamic> toJson() => {
-    'type': type.name,
-    'position': {'x': position.dx, 'y': position.dy},
-    'size': {'width': size.width, 'height': size.height},
-    'color': '#${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}',
-    if (text != null) 'text': text,
-    if (imageBytes != null) 'imageBytes': base64Encode(imageBytes!),
-  };
+  Map<String, dynamic> toJson({int? zIndex}) {
+    final map = <String, dynamic>{
+      'position_x': position.dx,
+      'position_y': position.dy,
+      'z_index': zIndex ?? 1,
+    };
+
+    switch (type) {
+      case BoardObjectType.image:
+        if (imageBytes != null) {
+          map['image'] = {
+            'bytes': base64Encode(imageBytes!),
+          };
+        }
+        break;
+      case BoardObjectType.text:
+        if (text != null) {
+          map['text'] = {'content': text};
+        }
+        break;
+      case BoardObjectType.rectangle:
+        map['name'] = 'rectangle';
+        map['shape'] = 'rectangle';
+        if (text != null) {
+          map['text'] = {'content': text};
+        }
+        break;
+      case BoardObjectType.circle:
+        map['name'] = 'circle';
+        map['shape'] = 'circle';
+        if (text != null) {
+          map['text'] = {'content': text};
+        }
+        break;
+      default:
+        break;
+    }
+
+    return map;
+  }
 } 
