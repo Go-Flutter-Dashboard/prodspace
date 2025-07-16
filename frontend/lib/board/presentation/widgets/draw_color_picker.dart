@@ -6,10 +6,10 @@ class DrawColorPicker extends StatelessWidget {
   final Function(Color) onColorChanged;
 
   const DrawColorPicker({
-    Key? key,
+    super.key,
     required this.drawColor,
     required this.onColorChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

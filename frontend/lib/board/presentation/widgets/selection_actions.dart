@@ -7,11 +7,11 @@ class SelectionActions extends StatelessWidget {
   final Function(Color) onColorChanged;
 
   const SelectionActions({
-    Key? key,
+    super.key,
     required this.onDelete,
     required this.currentColor,
     required this.onColorChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

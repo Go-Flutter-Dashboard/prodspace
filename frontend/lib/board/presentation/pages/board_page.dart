@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:prodspace/board/domain/utils/board_backend_connection_utils.dart';
 import 'dart:math';
-import 'dart:ui';
 import '../../domain/models/board_models.dart';
 import '../../domain/utils/board_utils.dart';
 import '../widgets/toolbar.dart';
@@ -9,13 +9,9 @@ import '../widgets/draw_color_picker.dart';
 import '../widgets/board_object_widget.dart';
 import '../widgets/board_painter.dart';
 import '../widgets/dashed_rect.dart';
-import '../widgets/color_picker_dialog.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:typed_data';
 import 'package:flutter/gestures.dart';
 import 'package:prodspace/settings/presentations/widgets/settings_btn.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:hive/hive.dart';
 
 class BoardPage extends StatefulWidget {
@@ -35,7 +31,6 @@ class _BordPageState extends State<BoardPage> {
   Set<int> _selectedObjectIndices = {};
   Offset? _dragStartLocal;
   Offset? _dragStartObjectPos;
-  String _pendingText = '';
   bool _isDrawing = false;
   DrawPath? _currentPath;
   Offset? _selectionBoxStart;
@@ -46,7 +41,6 @@ class _BordPageState extends State<BoardPage> {
   Map<int, List<Offset>>? _dragStartPathPoints;
   Color _colorPickerValue = Colors.blue;
   Color _drawColor = Colors.blue;
-  Color _objectColor = Colors.blue;
   Color _rectColor = Colors.blue;
   Color _circleColor = Colors.green;
   Color _textColor = Colors.black;
@@ -387,6 +381,7 @@ class _BordPageState extends State<BoardPage> {
   Future<void> _sendBoardToBackend() async {
     if (_isSending) return; // Prevent multiple sends
     
+    // Show loading icon
     setState(() {
       _isSending = true;
     });
@@ -403,6 +398,7 @@ class _BordPageState extends State<BoardPage> {
       return;
     }
     final token = box.get('token');
+    // Token is missed
     if (token == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Токен не найден!')),
@@ -416,52 +412,31 @@ class _BordPageState extends State<BoardPage> {
     // Копируем очередь, чтобы не было проблем при изменении во время отправки
     final List<BoardItem> queueCopy = List.from(_sendQueue);
     for (int i = 0; i < queueCopy.length; i++) {
-      dynamic boardData;
-
-      if (queueCopy[i] is BoardItemObject) {
-        boardData = (queueCopy[i] as BoardItemObject).object.toJson();
-      } else if (queueCopy[i] is BoardItemPath) {
-        boardData = (queueCopy[i] as BoardItemPath).path.toJson();
-      }
-
-      print('boardData: ' + jsonEncode(boardData));
-
       try {
-        final response = await http.post(
-          Uri.parse('http://localhost:3000/workspaces/my/items'),
-          headers: {
-            'Authorization': "Bearer $token",
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode(boardData),
+      final message = await BoardBackendConnectionUtils.sendBoardItem(queueCopy[i], token);
+      if (message == null) {
+        setState(() {
+          _sendQueue.remove(queueCopy[i]); // Удаляем из очереди после успешной отправки
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          (queueCopy[i] is BoardItemObject)
+          ? SnackBar(content: Text('Объект: ${(queueCopy[i] as BoardItemObject).object.zPos} успешно отправлен!'), duration: Duration(milliseconds: 500),)
+          : SnackBar(content: Text('Объект: Drawing успешно отправлен!'), duration: Duration(milliseconds: 500),),
         );
-        if (response.statusCode >= 200 && response.statusCode < 300) {
-          setState(() {
-            _sendQueue.remove(queueCopy[i]); // Удаляем из очереди после успешной отправки
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            (queueCopy[i] is BoardItemObject)
-            ? SnackBar(content: Text('Объект: ${(queueCopy[i] as BoardItemObject).object.zPos} успешно отправлен!'), duration: Duration(milliseconds: 500),)
-            : SnackBar(content: Text('Объект: Drawing успешно отправлен!'), duration: Duration(milliseconds: 500),),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Ошибка отправки объекта ${i + 1}: ${response.body}, status: ${response.statusCode}')),
-          );
-        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка отправки объекта: $message')),
+        );
+      }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка соединения при отправке объекта ${i + 1}: ${e.toString()}')),
+          SnackBar(content: Text('Ошибка соединения при отправке объекта: ${e.toString()}')),
         );
-      }
-
-      if (i < queueCopy.length - 1) {
-        await Future.delayed(const Duration(seconds: 3));
       }
     }
     setState(() {
-          _isSending = false;
-        });
+      _isSending = false;
+    });
   }
 
   @override

@@ -6,7 +6,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:prodspace/l10n/app_localizations.dart';
 import 'package:prodspace/login_n_regestration/logged_in.dart';
 import 'package:prodspace/settings/presentations/widgets/settings_btn.dart';
-import 'package:prodspace/l10n/app_localizations.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

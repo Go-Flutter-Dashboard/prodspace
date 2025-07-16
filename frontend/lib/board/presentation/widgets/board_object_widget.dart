@@ -10,11 +10,11 @@ class BoardObjectWidget extends StatelessWidget {
   final void Function(ResizeDirection direction, DragUpdateDetails details)? onResize;
 
   const BoardObjectWidget({
-    Key? key,
+    super.key,
     required this.object,
     required this.isSelected,
     this.onResize,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class BoardObjectWidget extends StatelessWidget {
           width: object.size.width,
           height: object.size.height,
           decoration: BoxDecoration(
-            color: object.color.withOpacity(0.7),
+            color: object.color.withAlpha(179),
             border: Border.all(color: Colors.black54, width: 2),
             borderRadius: BorderRadius.circular(8),
           ),
@@ -37,7 +37,7 @@ class BoardObjectWidget extends StatelessWidget {
           width: object.size.width,
           height: object.size.height,
           decoration: BoxDecoration(
-            color: object.color.withOpacity(0.7),
+            color: object.color.withAlpha(179),
             shape: BoxShape.circle,
             border: Border.all(color: Colors.black54, width: 2),
           ),

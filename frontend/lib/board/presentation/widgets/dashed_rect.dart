@@ -9,13 +9,13 @@ class DashedRect extends StatelessWidget {
   final double? height;
   
   const DashedRect({
-    Key? key, 
+    super.key, 
     this.color = Colors.blue, 
     this.strokeWidth = 2, 
     this.gap = 5, 
     this.width, 
     this.height
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

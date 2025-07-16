@@ -13,7 +13,7 @@ class Toolbar extends StatelessWidget {
   final Function(Color) onTextColorChanged;
 
   const Toolbar({
-    Key? key,
+    super.key,
     required this.selectedTool,
     required this.onToolSelected,
     required this.rectColor,
@@ -22,7 +22,7 @@ class Toolbar extends StatelessWidget {
     required this.onRectColorChanged,
     required this.onCircleColorChanged,
     required this.onTextColorChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
