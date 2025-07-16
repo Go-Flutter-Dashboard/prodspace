@@ -15,10 +15,17 @@ class _LoginPageState extends State<LoginPage> {
   // Controllers for name and password
   final _nameController = TextEditingController();
   final _passwordController = TextEditingController();
+  // State management
+  bool isLoading = false;
 
   // Submit button pressed
   void _submit() async {
     if (_formKey.currentState!.validate()) {
+      // Update state
+      setState(() {
+        isLoading = true;
+      });
+
       // Get values from controllers
       final username = _nameController.text.trim();
       final password = _passwordController.text;
@@ -37,12 +44,17 @@ class _LoginPageState extends State<LoginPage> {
         // Log failure
         debugPrint('Login failed: ${response.statusCode}');
         if (!mounted) return;
+        // Show error state
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Login failed: ${response.reasonPhrase}'),
             duration: const Duration(seconds: 1),
           ),
         );
+        // Update state
+        setState(() {
+          isLoading = false;
+        });
         return;
       }
 
@@ -69,6 +81,11 @@ class _LoginPageState extends State<LoginPage> {
       await setLoggedIn(true);
       if (!mounted) return;
 
+      // Update state
+      setState(() {
+        isLoading = false;
+      });
+
       // Navigate to main page
       Navigator.pushReplacementNamed(context, '/home');
     }
@@ -87,7 +104,8 @@ class _LoginPageState extends State<LoginPage> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
+            child: isLoading ? Center(child: CircularProgressIndicator()) :
+            Column(
               children: [
                 const Text(
                   'Login to Your Account',
