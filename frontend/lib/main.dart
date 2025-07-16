@@ -51,10 +51,10 @@ class MyApp extends StatelessWidget {
             // } else {
             //   return const LoginPage(); 
             // }
-            return const WorkspacePage();
+            return const BoardPage();
           },
         ),
-        '/home': (context) => const WorkspacePage(),
+        '/home': (context) => const BoardPage(),
         '/login': (context) => const LoginPage(),
         // '/register': (context) => const RegisterPage(),
       },
