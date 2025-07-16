@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:prodspace/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:prodspace/theme/theme_provider.dart';
+import 'package:prodspace/login_n_regestration/logged_in.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -105,6 +106,19 @@ class _SettingsPageState extends State<SettingsPage> {
                 ],
               ),
             ),
+            const SizedBox(height: 8.0),
+              ElevatedButton(
+                onPressed: () async {
+                  await setLoggedIn(false);
+                  if (!context.mounted) return;
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/login',
+                    (route) => false,
+                  );
+                },
+                child: Text('Log Out'),
+              ),
           ],
         ),
       ),

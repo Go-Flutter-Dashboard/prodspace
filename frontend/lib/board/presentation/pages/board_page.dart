@@ -29,7 +29,7 @@ class _BordPageState extends State<BoardPage> {
   final List<BoardObject> _objects = [];
   final List<DrawPath> _paths = [];
   // Очередь на отправку
-  final List<BoardObject> _sendQueue = [];
+  final List<BoardItem> _sendQueue = [];
   ToolType _selectedTool = ToolType.selection;
   int? _draggingObjectIndex;
   Set<int> _selectedObjectIndices = {};
@@ -75,7 +75,7 @@ class _BordPageState extends State<BoardPage> {
             color: _rectColor,
           );
           _objects.add(obj);
-          _sendQueue.add(obj);
+          _sendQueue.add(BoardItemObject(obj));
         });
         _nextObjZPos++;
         break;
@@ -89,7 +89,7 @@ class _BordPageState extends State<BoardPage> {
             color: _circleColor,
           );
           _objects.add(obj);
-          _sendQueue.add(obj);
+          _sendQueue.add(BoardItemObject(obj));
         });
         _nextObjZPos++;
         break;
@@ -107,7 +107,7 @@ class _BordPageState extends State<BoardPage> {
             );
             _nextObjZPos++;
             _objects.add(obj);
-            _sendQueue.add(obj);
+            _sendQueue.add(BoardItemObject(obj));
           });
         }
         break;
@@ -136,7 +136,7 @@ class _BordPageState extends State<BoardPage> {
             );
             _nextObjZPos++;
             _objects.add(obj);
-            _sendQueue.add(obj);
+            _sendQueue.add(BoardItemObject(obj));
           });
         }
         break;
@@ -215,6 +215,9 @@ class _BordPageState extends State<BoardPage> {
     if (_selectedTool == ToolType.draw && _isDrawing) {
       setState(() {
         _isDrawing = false;
+        if (_currentPath != null) {
+          _sendQueue.add(BoardItemPath(_currentPath!));
+        }
         _currentPath = null;
       });
       return;
@@ -390,9 +393,16 @@ class _BordPageState extends State<BoardPage> {
     }
 
     // Копируем очередь, чтобы не было проблем при изменении во время отправки
-    final List<BoardObject> queueCopy = List.from(_sendQueue);
+    final List<BoardItem> queueCopy = List.from(_sendQueue);
     for (int i = 0; i < queueCopy.length; i++) {
-      final boardData = queueCopy[i].toJson();
+      dynamic boardData;
+
+      if (queueCopy[i] is BoardItemObject) {
+        boardData = (queueCopy[i] as BoardItemObject).object.toJson();
+      } else if (queueCopy[i] is BoardItemPath) {
+        boardData = (queueCopy[i] as BoardItemPath).path.toJson();
+      }
+
       print('boardData: ' + jsonEncode(boardData));
 
       try {
@@ -409,7 +419,9 @@ class _BordPageState extends State<BoardPage> {
             _sendQueue.remove(queueCopy[i]); // Удаляем из очереди после успешной отправки
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Объект: ${queueCopy[i].zPos} успешно отправлен!'), duration: Duration(milliseconds: 500),),
+            (queueCopy[i] is BoardItemObject)
+            ? SnackBar(content: Text('Объект: ${(queueCopy[i] as BoardItemObject).object.zPos} успешно отправлен!'), duration: Duration(milliseconds: 500),)
+            : SnackBar(content: Text('Объект: Drawing успешно отправлен!'), duration: Duration(milliseconds: 500),),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(

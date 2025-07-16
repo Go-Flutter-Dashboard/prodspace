@@ -56,9 +56,11 @@ class DrawPath {
 
 extension DrawPathJson on DrawPath {
   Map<String, dynamic> toJson() => {
-    'points': points.map((p) => {'x': p.dx, 'y': p.dy}).toList(),
+    'drawing' : {'points': points.map((p) => {'x': p.dx, 'y': p.dy}).toList()},
     'color': '#${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}',
-    'strokeWidth': strokeWidth,
+    'position_x': 1,
+    'position_y': 1,
+    'z_index': 1,
   };
 }
 
@@ -84,15 +86,13 @@ extension BoardObjectJson on BoardObject {
         }
         break;
       case BoardObjectType.rectangle:
-        map['name'] = 'rectangle';
-        map['shape'] = 'rectangle';
+        map['shape'] = {"name": "rectangle"};
         if (text != null) {
           map['text'] = {'content': text};
         }
         break;
       case BoardObjectType.circle:
-        map['name'] = 'circle';
-        map['shape'] = 'circle';
+        map['shape'] = {"name": "circle"};
         if (text != null) {
           map['text'] = {'content': text};
         }
@@ -103,4 +103,16 @@ extension BoardObjectJson on BoardObject {
 
     return map;
   }
-} 
+}
+
+abstract class BoardItem {}
+
+class BoardItemObject extends BoardItem {
+  final BoardObject object;
+  BoardItemObject(this.object);
+}
+
+class BoardItemPath extends BoardItem {
+  final DrawPath path;
+  BoardItemPath(this.path);
+}
