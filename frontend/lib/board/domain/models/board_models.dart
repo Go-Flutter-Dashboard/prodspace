@@ -17,6 +17,7 @@ enum BoardObjectType { rectangle, circle, text, path, image }
 class BoardObject {
   final BoardObjectType type;
   final Offset position;
+  final int zPos;
   final Size size;
   final Color color;
   final String? text;
@@ -25,16 +26,18 @@ class BoardObject {
   BoardObject({
     required this.type,
     required this.position,
+    required this.zPos,
     required this.size,
     required this.color,
     this.text,
     this.imageBytes,
   });
 
-  BoardObject copyWith({Offset? position, Size? size, Color? color, String? text, Uint8List? imageBytes}) {
+  BoardObject copyWith({Offset? position, int? zPos, Size? size, Color? color, String? text, Uint8List? imageBytes}) {
     return BoardObject(
       type: type,
       position: position ?? this.position,
+      zPos: zPos ?? this.zPos,
       size: size ?? this.size,
       color: color ?? this.color,
       text: text ?? this.text,
@@ -60,11 +63,11 @@ extension DrawPathJson on DrawPath {
 }
 
 extension BoardObjectJson on BoardObject {
-  Map<String, dynamic> toJson({int? zIndex}) {
+  Map<String, dynamic> toJson() {
     final map = <String, dynamic>{
       'position_x': position.dx,
       'position_y': position.dy,
-      'z_index': zIndex ?? 1,
+      'z_index': zPos,
     };
 
     switch (type) {

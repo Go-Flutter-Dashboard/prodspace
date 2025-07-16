@@ -54,6 +54,7 @@ class _BordPageState extends State<BoardPage> {
   Offset _canvasOffset = Offset.zero;
   double _canvasScale = 1.0;
   double _initialScale = 1.0;
+  int _nextObjZPos = 1;
 
   void _onToolSelected(ToolType tool) {
     setState(() {
@@ -69,24 +70,28 @@ class _BordPageState extends State<BoardPage> {
           final obj = BoardObject(
             type: BoardObjectType.rectangle,
             position: boardPos,
+            zPos: _nextObjZPos,
             size: const Size(120, 80),
             color: _rectColor,
           );
           _objects.add(obj);
           _sendQueue.add(obj);
         });
+        _nextObjZPos++;
         break;
       case ToolType.circle:
         setState(() {
           final obj = BoardObject(
             type: BoardObjectType.circle,
             position: boardPos,
+            zPos: _nextObjZPos,
             size: const Size(90, 90),
             color: _circleColor,
           );
           _objects.add(obj);
           _sendQueue.add(obj);
         });
+        _nextObjZPos++;
         break;
       case ToolType.text:
         final text = await _showTextInputDialog();
@@ -95,10 +100,12 @@ class _BordPageState extends State<BoardPage> {
             final obj = BoardObject(
               type: BoardObjectType.text,
               position: boardPos,
+              zPos: _nextObjZPos,
               size: const Size(160, 50),
               color: _textColor,
               text: text,
             );
+            _nextObjZPos++;
             _objects.add(obj);
             _sendQueue.add(obj);
           });
@@ -122,10 +129,12 @@ class _BordPageState extends State<BoardPage> {
             final obj = BoardObject(
               type: BoardObjectType.image,
               position: boardPos,
+              zPos: _nextObjZPos,
               size: const Size(160, 120),
               color: Colors.transparent,
               imageBytes: bytes,
             );
+            _nextObjZPos++;
             _objects.add(obj);
             _sendQueue.add(obj);
           });
@@ -383,7 +392,7 @@ class _BordPageState extends State<BoardPage> {
     // Копируем очередь, чтобы не было проблем при изменении во время отправки
     final List<BoardObject> queueCopy = List.from(_sendQueue);
     for (int i = 0; i < queueCopy.length; i++) {
-      final boardData = queueCopy[i].toJson(zIndex: i + 1);
+      final boardData = queueCopy[i].toJson();
       print('boardData: ' + jsonEncode(boardData));
 
       try {
@@ -395,16 +404,16 @@ class _BordPageState extends State<BoardPage> {
           },
           body: jsonEncode(boardData),
         );
-        if (response.statusCode == 200) {
+        if (response.statusCode >= 200 && response.statusCode < 300) {
           setState(() {
             _sendQueue.remove(queueCopy[i]); // Удаляем из очереди после успешной отправки
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Объект ${i + 1} успешно отправлен!')),
+            SnackBar(content: Text('Объект: ${queueCopy[i].zPos} успешно отправлен!'), duration: Duration(milliseconds: 500),),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Ошибка отправки объекта ${i + 1}: ${response.body}')),
+            SnackBar(content: Text('Ошибка отправки объекта ${i + 1}: ${response.body}, status: ${response.statusCode}')),
           );
         }
       } catch (e) {
