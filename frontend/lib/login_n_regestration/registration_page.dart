@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:prodspace/login%20and%20regestration/logged_in.dart';
+import 'package:prodspace/login_n_regestration/logged_in.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   // Controllers for name and password
   final _nameController = TextEditingController();
@@ -26,20 +26,21 @@ class _LoginPageState extends State<LoginPage> {
       // Request to backend
       final response = await http.post(
         Uri.parse(
-          'localhost:8080'
+          'localhost:8080',
         ),
         headers: {'Content-Type': 'application/json'},
-        body: '{"username": "$username", "password": "$password"}',
+        body:
+            '{"username": "$username", "password": "$password"}',
       );
 
       // Bad response case
       if (response.statusCode != 200) {
         // Log failure
-        debugPrint('Login failed: ${response.statusCode}');
+        debugPrint('Registration failed: ${response.statusCode}');
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Login failed: ${response.reasonPhrase}'),
+            content: Text('Registration failed: ${response.reasonPhrase}'),
             duration: const Duration(seconds: 1),
           ),
         );
@@ -52,24 +53,20 @@ class _LoginPageState extends State<LoginPage> {
       if (!Hive.isBoxOpen('user_parameters')) {
         await Hive.openBox('user_parameters');
       }
-      final userBox = Hive.box('user_parameters');
-      userBox.put('username', username);
+      final settingsBox = Hive.box('user_parameters');
+      settingsBox.put('username', username);
 
       // Log success
-      debugPrint('Logged in: $username');
+      debugPrint('Registered: $username');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Logged in: $username'),
+          content: Text('Registered: $username'),
           duration: const Duration(seconds: 1),
         ),
       );
-
-      // Save user logged in
       await setLoggedIn(true);
       if (!mounted) return;
-
-      // Navigate to main page
       Navigator.pushReplacementNamed(context, '/home');
     }
   }
@@ -79,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
     var colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Login"),
+        title: const Text('Register'),
         backgroundColor: colorScheme.tertiary,
         foregroundColor: colorScheme.onTertiary,
       ),
@@ -90,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               children: [
                 const Text(
-                  'Login to Your Account',
+                  'Create an Account',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
@@ -100,40 +97,34 @@ class _LoginPageState extends State<LoginPage> {
                     child: Form(
                       key: _formKey,
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
                           TextFormField(
                             controller: _nameController,
                             decoration: const InputDecoration(
                               labelText: 'Username',
                             ),
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Enter username';
-                              }
-                              return null;
-                            },
+                            validator: (value) => value == null || value.isEmpty
+                                ? 'Enter username'
+                                : null,
                           ),
                           const SizedBox(height: 12),
                           TextFormField(
                             controller: _passwordController,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                             decoration: const InputDecoration(
                               labelText: 'Password',
                             ),
                             obscureText: true,
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
                             validator: (value) =>
                                 value != null && value.length >= 6
                                 ? null
                                 : 'Min 6 characters',
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 24),
                           ElevatedButton(
                             onPressed: _submit,
-                            child: const Text('Login'),
+                            child: const Text('Submit'),
                           ),
                         ],
                       ),
@@ -143,8 +134,8 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () =>
-                      Navigator.pushReplacementNamed(context, '/register'),
-                  child: const Text('Don\'t have an account? Register'),
+                      Navigator.pushReplacementNamed(context, '/login'),
+                  child: Text('Already have an account? Login'),
                 ),
               ],
             ),
