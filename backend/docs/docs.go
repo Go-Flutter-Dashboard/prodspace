@@ -9,24 +9,14 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "http://swagger.io/terms/",
-        "contact": {
-            "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
-        },
-        "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth": {
+        "/login": {
             "post": {
-                "description": "Authenticate a user with login and password, returning a token",
                 "consumes": [
                     "application/json"
                 ],
@@ -36,48 +26,39 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "User Login",
+                "summary": "Authenticate user",
                 "parameters": [
                     {
-                        "description": "Login and Password",
-                        "name": "authInput",
+                        "description": "Login credentials",
+                        "name": "credentials",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AuthInput"
+                            "$ref": "#/definitions/models.UserCreate"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "User logged in successfully",
+                        "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.AuthResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid request body or missing fields",
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/models.ErrorResponse"
                         }
                     },
                     "401": {
-                        "description": "Incorrect password",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "User not found",
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/models.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Failed to query database or create token",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/models.ErrorResponse"
                         }
@@ -85,7 +66,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/exercises": {
+        "/register": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -94,17 +75,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "exercises"
+                    "auth"
                 ],
-                "summary": "Create a new exercise",
+                "summary": "Register a new user",
                 "parameters": [
                     {
-                        "description": "Exercise create payload",
-                        "name": "exercise",
+                        "description": "User create payload",
+                        "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ExerciseCreate"
+                            "$ref": "#/definitions/models.UserCreate"
                         }
                     }
                 ],
@@ -123,260 +104,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/exercises/{id}": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "exercises"
-                ],
-                "summary": "Get an exercise by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Exercise ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.ExerciseRead"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "exercises"
-                ],
-                "summary": "Delete an exercise by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Exercise ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Exercise deleted successfully",
-                        "schema": {
-                            "$ref": "#/definitions/models.MessageResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Exercise Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "exercises"
-                ],
-                "summary": "Update an existing exercise by ID",
-                "parameters": [
-                    {
-                        "description": "Exercise update payload",
-                        "name": "exercise",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.ExerciseUpdate"
-                        }
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Exercise ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.MessageResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Exercise Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/statistics/active-users": {
-            "get": {
-                "description": "Returns the count of distinct active users grouped by specified time intervals between start and end dates.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "statistics"
-                ],
-                "summary": "Get number of active users in time intervals",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Start date/time in RFC3339 format (e.g., 2025-06-01T00:00:00Z)",
-                        "name": "start_date",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "End date/time in RFC3339 format (e.g., 2025-06-10T00:00:00Z)",
-                        "name": "end_date",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "example": "\"24h\"",
-                        "description": "Time interval step duration, format: \u003cnumber\u003e\u003cunit\u003e where unit is 'h' for hours or 'd' for days (e.g., '24h', '7d')",
-                        "name": "step",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Array of interval results containing start time, end time, and user count",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/handlers.intervalResult"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid input parameters (missing, malformed, or invalid date range)",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error while processing the request",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/statistics/add-activity": {
-            "post": {
-                "description": "Records activity for a user on a specific date",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "statistics"
-                ],
-                "summary": "Record user activity",
-                "parameters": [
-                    {
-                        "description": "Request parameters",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UserActivityCreate"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success message",
-                        "schema": {
-                            "$ref": "#/definitions/models.CreatedResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
                         "schema": {
                             "$ref": "#/definitions/models.ErrorResponse"
                         }
@@ -423,45 +150,8 @@ const docTemplate = `{
                             }
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Create a new user",
-                "parameters": [
-                    {
-                        "description": "User create payload",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UserCreate"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.CreatedResponse"
-                        }
-                    },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Malformed query parameters",
                         "schema": {
                             "$ref": "#/definitions/models.ErrorResponse"
                         }
@@ -489,9 +179,9 @@ const docTemplate = `{
                 "summary": "Get the total number of users",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "User count object",
                         "schema": {
-                            "type": "integer"
+                            "$ref": "#/definitions/models.CountResponse"
                         }
                     },
                     "500": {
@@ -665,9 +355,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/{id}/activity": {
+        "/workspaces/my": {
             "get": {
-                "description": "Retrieve monthly activity statistics for a user",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -675,30 +369,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "statistics"
+                    "workspaces"
                 ],
-                "summary": "Get user activity statistics",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Get a user's workspace",
                 "responses": {
                     "200": {
-                        "description": "Monthly activity statistics",
+                        "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/handlers.MonthlyStat"
-                            }
+                            "$ref": "#/definitions/models.WorkspaceRead"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User Not Found",
                         "schema": {
                             "$ref": "#/definitions/models.ErrorResponse"
                         }
@@ -712,8 +400,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/workouts": {
+        "/workspaces/my/items": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -721,23 +414,23 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "workouts"
+                    "workspaces"
                 ],
-                "summary": "Create a new workout",
+                "summary": "Append a workspace item",
                 "parameters": [
                     {
-                        "description": "Workout create payload",
-                        "name": "workout",
+                        "description": "Item to create",
+                        "name": "item",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.WorkoutCreate"
+                            "$ref": "#/definitions/models.ItemCreate"
                         }
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/models.CreatedResponse"
                         }
@@ -748,6 +441,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.ErrorResponse"
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -757,55 +456,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/workouts/{id}": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "workouts"
-                ],
-                "summary": "Get a workout by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Workout ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.WorkoutRead"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Workout Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            },
+        "/workspaces/my/items/{item_id}": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -813,70 +470,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "workouts"
+                    "workspaces"
                 ],
-                "summary": "Delete a workout by ID",
+                "summary": "Delete a workspace item by item ID and user ID",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Workout ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Workout deleted successfully",
-                        "schema": {
-                            "$ref": "#/definitions/models.MessageResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Workout Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "workouts"
-                ],
-                "summary": "Update an existing workout by ID",
-                "parameters": [
-                    {
-                        "description": "Workout update payload",
-                        "name": "workout",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.WorkoutUpdate"
-                        }
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Workout ID",
-                        "name": "id",
+                        "description": "Item ID",
+                        "name": "item_id",
                         "in": "path",
                         "required": true
                     }
@@ -895,7 +496,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Workout Not Found",
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/models.ErrorResponse"
                         }
@@ -909,7 +510,57 @@ const docTemplate = `{
                 }
             }
         },
-        "/workouts/{id}/exercise_set": {
+        "/workspaces/{user_id}": {
+            "get": {
+                "description": "Retrieve a workspace by their unique user id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspaces"
+                ],
+                "summary": "Get workspace by user id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User id",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.WorkspaceRead"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspaces/{user_id}/items": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -918,32 +569,32 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "workouts"
+                    "workspaces"
                 ],
-                "summary": "Append an exercise set to a workout",
+                "summary": "Append a workspace item",
                 "parameters": [
                     {
-                        "description": "ExerciseSet create payload",
-                        "name": "ExerciseSet",
+                        "description": "Item to create",
+                        "name": "item",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ExerciseSetCreate"
+                            "$ref": "#/definitions/models.ItemCreate"
                         }
                     },
                     {
                         "type": "integer",
-                        "description": "Workout ID",
-                        "name": "id",
+                        "description": "User ID",
+                        "name": "user_id",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.MessageResponse"
+                            "$ref": "#/definitions/models.CreatedResponse"
                         }
                     },
                     "400": {
@@ -953,7 +604,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Exercise Set Not Found",
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/models.ErrorResponse"
                         }
@@ -965,7 +616,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/workspaces/{user_id}/items/{item_id}": {
             "delete": {
                 "consumes": [
                     "application/json"
@@ -974,22 +627,22 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "workouts"
+                    "workspaces"
                 ],
-                "summary": "Delete an exercise set from a workout",
+                "summary": "Delete a workspace item by item ID and user ID",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Workout ID",
-                        "name": "id",
+                        "description": "User ID",
+                        "name": "user_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "Exercise ID",
-                        "name": "exercise_id",
-                        "in": "query",
+                        "description": "Item ID",
+                        "name": "item_id",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -1007,7 +660,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Exercise Set Not Found",
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/models.ErrorResponse"
                         }
@@ -1023,39 +676,26 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "handlers.MonthlyStat": {
+        "models.AuthResponse": {
             "type": "object",
             "properties": {
-                "count": {
-                    "type": "integer"
-                },
-                "month": {
+                "message": {
                     "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
-        "handlers.intervalResult": {
+        "models.CountResponse": {
             "type": "object",
             "properties": {
                 "count": {
-                    "type": "integer"
-                },
-                "end_time": {
-                    "type": "string"
-                },
-                "start_time": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.AuthInput": {
-            "type": "object",
-            "properties": {
-                "login": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
+                    "type": "integer",
+                    "example": 10
                 }
             }
         },
@@ -1068,7 +708,7 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string",
-                    "example": "User created successfully"
+                    "example": "Resource created successfully"
                 }
             }
         },
@@ -1081,123 +721,86 @@ const docTemplate = `{
                 }
             }
         },
-        "models.ExerciseCreate": {
+        "models.ImageItemCreate": {
             "type": "object",
             "properties": {
-                "description": {
-                    "type": "string",
-                    "example": "Push-ups are a basic exercise that works the chest, shoulders, and triceps."
-                },
-                "muscle_groups": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "chest",
-                        "back",
-                        "triceps"
-                    ]
-                },
-                "name": {
-                    "type": "string"
-                },
-                "url": {
+                "bytes": {
                     "type": "string"
                 }
             }
         },
-        "models.ExerciseRead": {
+        "models.ImageItemRead": {
             "type": "object",
             "properties": {
-                "description": {
-                    "type": "string",
-                    "example": "Push-ups are a basic exercise that works the chest, shoulders, and triceps."
+                "bytes": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ItemCreate": {
+            "type": "object",
+            "properties": {
+                "image": {
+                    "$ref": "#/definitions/models.ImageItemCreate"
                 },
-                "id": {
-                    "type": "integer",
+                "position_x": {
+                    "type": "number",
                     "example": 1
                 },
-                "muscle_groups": {
+                "position_y": {
+                    "type": "number",
+                    "example": 1
+                },
+                "text": {
+                    "$ref": "#/definitions/models.TextItemCreate"
+                },
+                "todo_list": {
                     "type": "array",
                     "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "chest",
-                        "back",
-                        "triceps"
-                    ]
+                        "$ref": "#/definitions/models.TodoItemFieldCreate"
+                    }
                 },
-                "name": {
-                    "type": "string"
-                },
-                "url": {
-                    "description": "URL to the exercise image",
-                    "type": "string",
-                    "example": "https://example.com/image.jpg"
+                "z_index": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
-        "models.ExerciseSetCreate": {
+        "models.ItemRead": {
             "type": "object",
             "properties": {
-                "exercise_id": {
-                    "type": "integer",
-                    "example": 10
+                "height": {
+                    "type": "number"
                 },
-                "reps": {
-                    "type": "integer",
-                    "example": 10
+                "id": {
+                    "type": "integer"
                 },
-                "weight": {
-                    "type": "number",
-                    "example": 10
-                }
-            }
-        },
-        "models.ExerciseSetRead": {
-            "type": "object",
-            "properties": {
-                "exercise_id": {
-                    "type": "integer",
-                    "example": 10
+                "image": {
+                    "$ref": "#/definitions/models.ImageItemRead"
                 },
-                "reps": {
-                    "type": "integer",
-                    "example": 10
+                "position_x": {
+                    "type": "number"
                 },
-                "weight": {
-                    "type": "number",
-                    "example": 10
-                }
-            }
-        },
-        "models.ExerciseUpdate": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string",
-                    "example": "Push-ups are a basic exercise that works the chest, shoulders, and triceps."
+                "position_y": {
+                    "type": "number"
                 },
-                "image_path": {
-                    "description": "URL to the exercise image",
-                    "type": "string",
-                    "example": "https://example.com/image.jpg"
+                "text": {
+                    "$ref": "#/definitions/models.TextItemRead"
                 },
-                "muscle_group": {
+                "todo_list": {
                     "type": "array",
                     "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "chest",
-                        "back",
-                        "triceps"
-                    ]
+                        "$ref": "#/definitions/models.TodoListItemFieldRead"
+                    }
                 },
-                "url": {
-                    "type": "string"
+                "width": {
+                    "type": "number"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                },
+                "z_index": {
+                    "type": "integer"
                 }
             }
         },
@@ -1210,226 +813,109 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UserActivityCreate": {
+        "models.TextItemCreate": {
             "type": "object",
             "properties": {
-                "date": {
+                "content": {
+                    "type": "string",
+                    "example": "Hello, world!"
+                }
+            }
+        },
+        "models.TextItemRead": {
+            "type": "object",
+            "properties": {
+                "content": {
                     "type": "string"
+                }
+            }
+        },
+        "models.TodoItemFieldCreate": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Hello, world!"
                 },
-                "user_id": {
-                    "type": "integer",
-                    "example": 12345
+                "done": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.TodoListItemFieldRead": {
+            "type": "object",
+            "properties": {
+                "done": {
+                    "type": "boolean"
+                },
+                "text": {
+                    "$ref": "#/definitions/models.TextItemRead"
                 }
             }
         },
         "models.UserCreate": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "john_doe@gmail.com"
-                },
                 "login": {
                     "type": "string",
                     "example": "john123"
                 },
-                "name": {
-                    "type": "string",
-                    "example": "John"
-                },
                 "password": {
                     "type": "string",
                     "example": "123"
-                },
-                "surname": {
-                    "type": "string",
-                    "example": "Wick"
                 }
             }
         },
         "models.UserRead": {
             "type": "object",
             "properties": {
-                "average_workout_duration_ns": {
-                    "description": "in nanoseconds",
-                    "type": "integer",
-                    "example": 3600
-                },
-                "email": {
-                    "type": "string",
-                    "example": "john_doe@gmail.com"
-                },
                 "id": {
                     "type": "integer",
                     "example": 12345
                 },
-                "last_activity": {
-                    "type": "string",
-                    "example": "2023-10-01T12:00:00Z"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "John"
-                },
-                "number_of_workouts": {
-                    "type": "integer",
-                    "example": 0
-                },
-                "status": {
-                    "description": "e.g., \"active\", \"inactive\", \"banned\"",
-                    "type": "string",
-                    "example": "active"
-                },
-                "streak_count": {
-                    "type": "integer",
-                    "example": 0
-                },
-                "subscription_type": {
-                    "description": "e.g., \"free\", \"basic\", \"pro\"",
-                    "type": "string",
-                    "example": "free"
-                },
-                "surname": {
-                    "type": "string",
-                    "example": "Doe"
-                },
-                "total_time_spent_ns": {
-                    "description": "in nanoseconds",
-                    "type": "integer",
-                    "example": 3600
-                },
                 "username": {
                     "type": "string"
+                },
+                "workspace_id": {
+                    "type": "integer"
                 }
             }
         },
         "models.UserUpdate": {
             "type": "object",
             "properties": {
-                "average_workout_duration_ns": {
-                    "description": "in seconds",
-                    "type": "integer",
-                    "example": 3600
-                },
-                "email": {
-                    "type": "string",
-                    "example": "john_doe@gmail.com"
-                },
-                "last_activity": {
-                    "type": "string",
-                    "example": "2023-10-01T12:00:00Z"
-                },
                 "login": {
-                    "type": "string"
-                },
-                "name": {
                     "type": "string",
-                    "example": "John"
+                    "example": "john123"
                 },
-                "number_of_workouts": {
-                    "type": "integer",
-                    "example": 0
-                },
-                "password": {
-                    "type": "string"
-                },
-                "status": {
-                    "description": "e.g., \"active\", \"inactive\", \"banned\"",
+                "new_password": {
                     "type": "string",
-                    "example": "active"
+                    "example": "234"
                 },
-                "streak_count": {
-                    "type": "integer",
-                    "example": 0
-                },
-                "subscription_type": {
+                "old_password": {
                     "type": "string",
-                    "example": "free"
-                },
-                "surname": {
-                    "type": "string"
-                },
-                "total_time_spent_ns": {
-                    "description": "in seconds",
-                    "type": "integer",
-                    "example": 3600
+                    "example": "123"
                 }
             }
         },
-        "models.WorkoutCreate": {
+        "models.WorkspaceRead": {
             "type": "object",
             "properties": {
-                "duration_ns": {
-                    "description": "in nanoseconds",
-                    "type": "integer",
-                    "example": 60
-                },
-                "exercise_sets": {
+                "items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.ExerciseSetCreate"
+                        "$ref": "#/definitions/models.ItemRead"
                     }
-                },
-                "start_time": {
-                    "type": "string",
-                    "example": "2023-10-01T12:00:00Z"
-                },
-                "user_id": {
-                    "type": "integer",
-                    "example": 12345
                 }
             }
-        },
-        "models.WorkoutRead": {
-            "type": "object",
-            "properties": {
-                "duration_ns": {
-                    "description": "in nanoseconds",
-                    "type": "integer",
-                    "example": 60
-                },
-                "exercise_sets": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.ExerciseSetRead"
-                    }
-                },
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "timestamp": {
-                    "type": "string",
-                    "example": "2023-10-01T12:00:00Z"
-                },
-                "user_id": {
-                    "type": "integer",
-                    "example": 12345
-                }
-            }
-        },
-        "models.WorkoutUpdate": {
-            "type": "object",
-            "properties": {
-                "duration_ns": {
-                    "type": "integer",
-                    "example": 60
-                },
-                "exercise_sets": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.ExerciseSetCreate"
-                    }
-                },
-                "start_time": {
-                    "type": "string",
-                    "example": "2023-10-01T12:00:00Z"
-                },
-                "user_id": {
-                    "type": "integer",
-                    "example": 12345
-                }
-            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type \"Bearer\" followed by a space and the JWT token",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`
@@ -1437,11 +923,11 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:3000",
-	BasePath:         "/",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Gym Genius API",
-	Description:      "API for Gym Genius application",
+	Title:            "ProdSpace API",
+	Description:      "API for ProdSpace application",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

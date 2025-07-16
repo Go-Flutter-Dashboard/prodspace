@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:15
+    image: postgres:lastest
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres

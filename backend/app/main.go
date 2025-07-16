@@ -1,9 +1,9 @@
 package main
 
 import (
-	_ "admin/docs"
-	"admin/internal/database"
-	"admin/internal/middlewares"
+	_ "backend/docs"
+	"backend/internal/database"
+	"backend/internal/middlewares"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,6 +14,10 @@ import (
 // @title ProdSpace API
 // @version 1.0
 // @description API for ProdSpace application
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and the JWT token
 // @termsOfService http://swagger.io/terms/
 // @contact.name API Support
 // @contact.url http://www.swagger.io/support
@@ -38,7 +42,7 @@ func main() {
 	// sets X-Request-ID header with uuids
 	app.Use(requestid.New())
 	app.Use(middleware.LoggingMiddleware())
-
+	app.Use(middleware.JWTMiddleware)
 	CombineRoutes(app)
 
 	log.Fatal(app.Listen(":3000"))

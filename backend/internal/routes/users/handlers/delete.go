@@ -1,14 +1,13 @@
 package handlers
 
 import (
-	"admin/internal/database"
-	"admin/internal/database/schemas"
-	"admin/internal/models"
+	"backend/internal/database"
+	"backend/internal/database/schemas"
+	"backend/internal/models"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-// DeleteUser
 // @Summary Delete a user by ID
 // @Tags users
 // @Accept json

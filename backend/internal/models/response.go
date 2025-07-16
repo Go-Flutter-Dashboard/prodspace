@@ -1,36 +1,39 @@
 package models
 
-import (
-	"time"
-)
-
 type UserRead struct {
-	ID       uint   `json:"id" example:"12345"`
-	Login    string `json:"username"`
-	UserName string `json:"name" example:"John"`
+	ID          uint   `json:"id" example:"12345"`
+	Login       string `json:"username"`
+	WorkspaceID uint   `json:"workspace_id"`
 }
 
-type ExerciseSetRead struct {
-	Weight     float64 `json:"weight"      example:"10"`
-	Reps       uint    `json:"reps"        example:"10"`
-	ExerciseID uint    `json:"exercise_id" example:"10"`
-	WorkoutID  uint    `json:"-"           example:"10"`
+type TextItemRead struct {
+	Content string `json:"content"`
 }
 
-type WorkoutRead struct {
-	ID           uint              `json:"id" example:"1"`
-	DurationNS   int64             `json:"duration_ns" example:"60"` // in nanoseconds
-	Timestamp    time.Time         `json:"timestamp" example:"2023-10-01T12:00:00Z"`
-	UserID       uint              `json:"user_id" example:"12345"`
-	ExerciseSets []ExerciseSetRead `json:"exercise_sets"`
+type TodoListItemFieldRead struct {
+	TextItemRead TextItemRead `json:"text"`
+	Done         bool         `json:"done"`
 }
 
-type ExerciseRead struct {
-	ID           uint     `json:"id" example:"1"`
-	Name         string   `json:"name"`
-	Description  string   `json:"description" example:"Push-ups are a basic exercise that works the chest, shoulders, and triceps."`
-	MuscleGroups []string `json:"muscle_groups" example:"chest,back,triceps"`
-	URL          string   `json:"url" example:"https://example.com/image.jpg"` // URL to the exercise image
+type ImageItemRead struct {
+	Bytes string `json:"bytes"`
+}
+
+type ItemRead struct {
+	ID           uint                     `json:"id"`
+	PositionX    float64                  `json:"position_x"`
+	PositionY    float64                  `json:"position_y"`
+	ZIndex       uint                     `json:"z_index"`
+	WorkspaceID  uint                     `json:"workspace_id"`
+	Width        float64                  `json:"width"`
+	Height       float64                  `json:"height"`
+	TextItem     *TextItemRead            `json:"text,omitempty"`
+	ImageItem    *ImageItemRead           `json:"image,omitempty"`
+	TodoListItem []TodoListItemFieldRead `json:"todo_list,omitempty"`
+}
+
+type WorkspaceRead struct {
+	Items []ItemRead `json:"items"`
 }
 
 type MessageResponse struct {
@@ -38,7 +41,7 @@ type MessageResponse struct {
 }
 
 type CreatedResponse struct {
-	Message string `json:"message" example:"User created successfully"`
+	Message string `json:"message" example:"Resource created successfully"`
 	ID      uint   `json:"id" example:"12345"`
 }
 
@@ -48,4 +51,10 @@ type ErrorResponse struct {
 
 type CountResponse struct {
 	Count int64 `json:"count" example:"10"`
+}
+
+type AuthResponse struct {
+	Message string `json:"message"`
+	Token   string `json:"token"`
+	UserID  uint   `json:"user_id"`
 }

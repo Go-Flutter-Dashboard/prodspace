@@ -1,8 +1,7 @@
 package middleware
 
 import (
-	"admin/config"
-	"admin/internal/models"
+	"backend/config"
 	"strings"
 	"time"
 
@@ -21,47 +20,45 @@ type userLoginKeyT struct{}
 var LoginKey userLoginKeyT
 
 func JWTMiddleware(c *fiber.Ctx) error {
-	authHeader := c.Get("Authorization")
-	if authHeader == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
-			Error: "Missing authorization header",
-		})
-	}
+    authHeader := c.Get("Authorization")
+    // If no auth header, continue without setting locals
+    if authHeader == "" {
+        return c.Next()
+    }
 
-	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-	if tokenString == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
-			Error: "Token not provided",
-		})
-	}
+    tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+    if tokenString == "" {
+        return c.Next() // Continue without token
+    }
 
-	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fiber.ErrUnauthorized
-		}
-		return []byte(jwtSecret), nil
-	})
+    token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+        if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+            return nil, fiber.ErrUnauthorized
+        }
+        return []byte(jwtSecret), nil
+    })
 
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
-			Error: "Invalid token",
-		})
-	}
+    // If token is invalid, continue without setting locals
+    if err != nil {
+        return c.Next()
+    }
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if exp, ok := claims["exp"].(float64); ok && time.Now().Unix() > int64(exp) {
-			return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
-				Error: "Token expired",
-			})
-		}
+    if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+        // Check expiration if claim exists
+        if exp, ok := claims["exp"].(float64); ok {
+            if time.Now().Unix() > int64(exp) {
+                return c.Next() // Token expired, continue anyway
+            }
+        }
 
-		c.Locals(IDKey, claims["id"])
-		c.Locals(LoginKey, claims["login"])
-	} else {
-		return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
-			Error: "Invalid token claims",
-		})
-	}
+        // Set user info if token is valid
+        if id, ok := claims["id"].(float64); ok {
+            c.Locals(IDKey, uint(id)) // Convert to uint
+        }
+        if login, ok := claims["login"].(string); ok {
+            c.Locals(LoginKey, login)
+        }
+    }
 
-	return c.Next()
+    return c.Next()
 }

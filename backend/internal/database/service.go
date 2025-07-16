@@ -1,10 +1,11 @@
 package database
 
 import (
-	"admin/config"
-	"admin/internal/database/schemas"
+	"backend/config"
+	"backend/internal/database/schemas"
 
 	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
 	"time"
@@ -33,6 +34,11 @@ func Hash(login, password string) string {
 	data := login + ":" + password + ":" + secret
 	hash := sha256.Sum256([]byte(data))
 	return hex.EncodeToString(hash[:])
+}
+
+func VerifyPassword(storedHash, login, inputPassword string) bool {
+    inputHash := Hash(login, inputPassword)
+    return subtle.ConstantTimeCompare([]byte(storedHash), []byte(inputHash)) == 1
 }
 
 func CreateTokenForUser(user schemas.User) (string, error) {
@@ -81,7 +87,13 @@ func InitDatabase() error {
 
 	err = DB.AutoMigrate(
 		&schemas.User{},
+		&schemas.ImageItem{},
+		&schemas.Item{},
+		&schemas.TextItem{},
+		&schemas.TodoListField{},
+		&schemas.TodoListItem{},
 	)
+	
 	if err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}

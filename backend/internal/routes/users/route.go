@@ -1,13 +1,14 @@
 package users
 
 import (
-	"admin/internal/routes/users/handlers"
+	"backend/internal/routes/users/handlers"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-func SetUpUserRoutes(app *fiber.App) {
-	app.Post("/users/", handlers.CreateUser)
+func SetupUserRoutes(app *fiber.App) {
+	app.Post("/register/", handlers.RegisterUser)
+	app.Post("/login/", handlers.LoginUser)
 	app.Get("/users/", handlers.GetUsersPaginate)
 	app.Get("/users/count", handlers.GetUserCount)
 	app.Get("/users/:id", handlers.GetUser)

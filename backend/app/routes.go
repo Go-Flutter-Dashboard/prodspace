@@ -1,9 +1,9 @@
 package main
 
 import (
-	"admin/internal/models"
-	"admin/internal/routes/authorization"
-	"admin/internal/routes/users"
+	"backend/internal/models"
+	"backend/internal/routes/users"
+	"backend/internal/routes/workspace"
 	"embed"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,9 +14,9 @@ import (
 var welcomePage embed.FS
 
 func CombineRoutes(app *fiber.App) {
-	authorization.SetupAuthRoutes(app)
-	users.SetUpUserRoutes(app)
-
+	users.SetupUserRoutes(app)
+	workspace.SetupWorkspaceRoutes(app)
+	
 	app.Get("/swagger/*", swagger.WrapHandler)
 
 	// healthcheck
