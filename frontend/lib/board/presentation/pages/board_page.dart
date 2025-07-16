@@ -12,6 +12,7 @@ import '../widgets/dashed_rect.dart';
 import '../widgets/color_picker_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
+import 'package:flutter/gestures.dart';
 
 class BoardPage extends StatefulWidget {
   const BoardPage({super.key});
@@ -299,6 +300,45 @@ class _BordPageState extends State<BoardPage> {
     return BoardUtils.screenToBoardCoordinates(screenPos, _canvasOffset, _canvasScale);
   }
 
+  void _handleResize(int idx, ResizeDirection direction, DragUpdateDetails details) {
+    setState(() {
+      final obj = _objects[idx];
+      final delta = details.delta;
+      Offset newPosition = obj.position;
+      Size newSize = obj.size;
+      switch (direction) {
+        case ResizeDirection.topLeft:
+          newPosition += delta;
+          newSize = Size(
+            (obj.size.width - delta.dx).clamp(20, double.infinity),
+            (obj.size.height - delta.dy).clamp(20, double.infinity),
+          );
+          break;
+        case ResizeDirection.topRight:
+          newPosition += Offset(0, delta.dy);
+          newSize = Size(
+            (obj.size.width + delta.dx).clamp(20, double.infinity),
+            (obj.size.height - delta.dy).clamp(20, double.infinity),
+          );
+          break;
+        case ResizeDirection.bottomLeft:
+          newPosition += Offset(delta.dx, 0);
+          newSize = Size(
+            (obj.size.width - delta.dx).clamp(20, double.infinity),
+            (obj.size.height + delta.dy).clamp(20, double.infinity),
+          );
+          break;
+        case ResizeDirection.bottomRight:
+          newSize = Size(
+            (obj.size.width + delta.dx).clamp(20, double.infinity),
+            (obj.size.height + delta.dy).clamp(20, double.infinity),
+          );
+          break;
+      }
+      _objects[idx] = obj.copyWith(position: newPosition, size: newSize);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final hasSelection = _selectedObjectIndices.isNotEmpty || _selectedPathIndices.isNotEmpty;
@@ -311,185 +351,201 @@ class _BordPageState extends State<BoardPage> {
             children: [
               // Доска и взаимодействия
               Positioned.fill(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTapUp: (details) {
-                    final boardPos = _screenToBoardCoordinates(details.localPosition);
-                    if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
-                    _onTapBoard(boardPos);
+                child: Listener(
+                  onPointerSignal: (pointerSignal) {
+                    if (pointerSignal is PointerScrollEvent) {
+                      setState(() {
+                        if (pointerSignal.scrollDelta.dy < 0) {
+                          _canvasScale = (_canvasScale * 1.1).clamp(0.5, 3.0);
+                        } else {
+                          _canvasScale = (_canvasScale / 1.1).clamp(0.5, 3.0);
+                        }
+                      });
+                    }
                   },
-                  onScaleStart: (details) {
-                    if (_selectedTool == ToolType.pan) {
-                      _dragStartLocal = details.focalPoint;
-                      _dragStartObjectPos = _canvasOffset;
-                      _initialScale = _canvasScale;
-                    } else if (_selectedTool == ToolType.selection) {
-                      final boardPos = _screenToBoardCoordinates(details.localFocalPoint);
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTapUp: (details) {
+                      final boardPos = _screenToBoardCoordinates(details.localPosition);
                       if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
-                      final idx = BoardUtils.findObjectAt(boardPos, _objects);
-                      final pathIdx = BoardUtils.findPathAt(boardPos, _paths);
-                      if (idx != null && _selectedObjectIndices.contains(idx)) {
-                        _dragStartPointer = boardPos;
-                        _dragStartPositions = {
-                          for (final i in _selectedObjectIndices)
-                            i: _objects[i].position
-                        };
-                        _dragStartPathPoints = {
-                          for (final i in _selectedPathIndices)
-                            i: List<Offset>.from(_paths[i].points)
-                        };
-                      } else if (pathIdx != null && _selectedPathIndices.contains(pathIdx)) {
-                        _dragStartPointer = boardPos;
-                        _dragStartPositions = {};
-                        _dragStartPathPoints = {
-                          for (final i in _selectedPathIndices)
-                            i: List<Offset>.from(_paths[i].points)
-                        };
-                      } else if (idx == null && pathIdx == null) {
-                        _onSelectionBoxStart(boardPos);
+                      _onTapBoard(boardPos);
+                    },
+                    onScaleStart: (details) {
+                      if (_selectedTool == ToolType.pan) {
+                        _dragStartLocal = details.focalPoint;
+                        _dragStartObjectPos = _canvasOffset;
+                        _initialScale = _canvasScale;
+                      } else if (_selectedTool == ToolType.selection) {
+                        final boardPos = _screenToBoardCoordinates(details.localFocalPoint);
+                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
+                        final idx = BoardUtils.findObjectAt(boardPos, _objects);
+                        final pathIdx = BoardUtils.findPathAt(boardPos, _paths);
+                        if (idx != null && _selectedObjectIndices.contains(idx)) {
+                          _dragStartPointer = boardPos;
+                          _dragStartPositions = {
+                            for (final i in _selectedObjectIndices)
+                              i: _objects[i].position
+                          };
+                          _dragStartPathPoints = {
+                            for (final i in _selectedPathIndices)
+                              i: List<Offset>.from(_paths[i].points)
+                          };
+                        } else if (pathIdx != null && _selectedPathIndices.contains(pathIdx)) {
+                          _dragStartPointer = boardPos;
+                          _dragStartPositions = {};
+                          _dragStartPathPoints = {
+                            for (final i in _selectedPathIndices)
+                              i: List<Offset>.from(_paths[i].points)
+                          };
+                        } else if (idx == null && pathIdx == null) {
+                          _onSelectionBoxStart(boardPos);
+                        }
+                      } else if (_selectedTool == ToolType.draw) {
+                        _onScaleStart(ScaleStartDetails(localFocalPoint: _screenToBoardCoordinates(details.localFocalPoint)));
+                      } else {
+                        _onScaleStart(ScaleStartDetails(localFocalPoint: _screenToBoardCoordinates(details.localFocalPoint)));
                       }
-                    } else if (_selectedTool == ToolType.draw) {
-                      _onScaleStart(ScaleStartDetails(localFocalPoint: _screenToBoardCoordinates(details.localFocalPoint)));
-                    } else {
-                      _onScaleStart(ScaleStartDetails(localFocalPoint: _screenToBoardCoordinates(details.localFocalPoint)));
-                    }
-                  },
-                  onScaleUpdate: (details) {
-                    if (_selectedTool == ToolType.pan && _dragStartLocal != null && _dragStartObjectPos != null) {
-                      setState(() {
-                        _canvasScale = (_initialScale * details.scale).clamp(0.5, 3.0);
-                        final Offset rawOffset = _dragStartObjectPos! + (details.focalPoint - _dragStartLocal!);
-                        _canvasOffset = rawOffset;
-                      });
-                    } else if (_selectedTool == ToolType.selection && _dragStartPointer != null && (_dragStartPositions != null || _dragStartPathPoints != null)) {
-                      final boardPos = _screenToBoardCoordinates(details.localFocalPoint);
-                      if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
-                      final delta = (boardPos - _dragStartPointer!);
-                      setState(() {
-                        if (_dragStartPositions != null) {
-                          for (final i in _selectedObjectIndices) {
-                            final start = _dragStartPositions![i]!;
-                            _objects[i] = _objects[i].copyWith(position: start + delta);
+                    },
+                    onScaleUpdate: (details) {
+                      if (_selectedTool == ToolType.pan && _dragStartLocal != null && _dragStartObjectPos != null) {
+                        setState(() {
+                          _canvasScale = (_initialScale * details.scale).clamp(0.5, 3.0);
+                          final Offset rawOffset = _dragStartObjectPos! + (details.focalPoint - _dragStartLocal!);
+                          _canvasOffset = rawOffset;
+                        });
+                      } else if (_selectedTool == ToolType.selection && _dragStartPointer != null && (_dragStartPositions != null || _dragStartPathPoints != null)) {
+                        final boardPos = _screenToBoardCoordinates(details.localFocalPoint);
+                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
+                        final delta = (boardPos - _dragStartPointer!);
+                        setState(() {
+                          if (_dragStartPositions != null) {
+                            for (final i in _selectedObjectIndices) {
+                              final start = _dragStartPositions![i]!;
+                              _objects[i] = _objects[i].copyWith(position: start + delta);
+                            }
                           }
-                        }
-                        if (_dragStartPathPoints != null) {
-                          for (final i in _selectedPathIndices) {
-                            final startPoints = _dragStartPathPoints![i]!;
-                            _paths[i] = DrawPath(
-                              startPoints.map((p) => p + delta).toList(),
-                              _paths[i].color,
-                              _paths[i].strokeWidth,
-                            );
+                          if (_dragStartPathPoints != null) {
+                            for (final i in _selectedPathIndices) {
+                              final startPoints = _dragStartPathPoints![i]!;
+                              _paths[i] = DrawPath(
+                                startPoints.map((p) => p + delta).toList(),
+                                _paths[i].color,
+                                _paths[i].strokeWidth,
+                              );
+                            }
                           }
-                        }
-                      });
-                    } else if (_selectedTool == ToolType.selection && _selectionBoxStart != null) {
-                      final boardPos = _screenToBoardCoordinates(details.localFocalPoint);
-                      if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
-                      _onSelectionBoxUpdate(boardPos);
-                    } else if (_selectedTool == ToolType.draw && _isDrawing) {
-                      _onScaleUpdate(ScaleUpdateDetails(localFocalPoint: _screenToBoardCoordinates(details.localFocalPoint)));
-                    } else if (_draggingObjectIndex != null && _dragStartLocal != null) {
-                      _onScaleUpdate(ScaleUpdateDetails(localFocalPoint: _screenToBoardCoordinates(details.localFocalPoint)));
-                    }
-                  },
-                  onScaleEnd: (details) {
-                    if (_selectedTool == ToolType.pan) {
-                      _dragStartLocal = null;
-                      _dragStartObjectPos = null;
-                    } else if (_selectedTool == ToolType.selection && _dragStartPointer != null && (_dragStartPositions != null || _dragStartPathPoints != null)) {
-                      _dragStartPointer = null;
-                      _dragStartPositions = null;
-                      _dragStartPathPoints = null;
-                    } else if (_selectedTool == ToolType.selection && _selectionBoxStart != null) {
-                      _onSelectionBoxEnd();
-                    } else if (_selectedTool == ToolType.draw && _isDrawing) {
-                      _onScaleEnd(ScaleEndDetails());
-                    } else if (_draggingObjectIndex != null && _dragStartLocal != null) {
-                      _onScaleEnd(ScaleEndDetails());
-                    }
-                  },
-                  child: Container(
-                    color: Colors.grey[300],
-                    child: Center(
-                      child: Transform(
-                        transform: Matrix4.identity()
-                          ..translate(effectiveOffset.dx, effectiveOffset.dy)
-                          ..scale(_canvasScale),
-                        child: Stack(
-                          children: [
-                            // Доска
-                            Container(
-                              width: _boardSize.width,
-                              height: _boardSize.height,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(color: Colors.grey, width: 3),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Paths (рисование)
-                            ..._paths.asMap().entries.map((entry) {
-                              final idx = entry.key;
-                              final path = entry.value;
-                              final isSelected = _selectedPathIndices.contains(idx);
-                              return Stack(
-                                children: [
-                                  CustomPaint(
-                                    size: _boardSize,
-                                    painter: BoardPainter([path]),
-                                  ),
-                                  if (isSelected)
-                                    Positioned(
-                                      left: BoardUtils.boundingBoxForPath(path).left,
-                                      top: BoardUtils.boundingBoxForPath(path).top,
-                                      child: DashedRect(
-                                        color: Colors.blue,
-                                        strokeWidth: 2,
-                                        gap: 6,
-                                        width: BoardUtils.boundingBoxForPath(path).width,
-                                        height: BoardUtils.boundingBoxForPath(path).height,
-                                      ),
+                        });
+                      } else if (_selectedTool == ToolType.selection && _selectionBoxStart != null) {
+                        final boardPos = _screenToBoardCoordinates(details.localFocalPoint);
+                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
+                        _onSelectionBoxUpdate(boardPos);
+                      } else if (_selectedTool == ToolType.draw && _isDrawing) {
+                        _onScaleUpdate(ScaleUpdateDetails(localFocalPoint: _screenToBoardCoordinates(details.localFocalPoint)));
+                      } else if (_draggingObjectIndex != null && _dragStartLocal != null) {
+                        _onScaleUpdate(ScaleUpdateDetails(localFocalPoint: _screenToBoardCoordinates(details.localFocalPoint)));
+                      }
+                    },
+                    onScaleEnd: (details) {
+                      if (_selectedTool == ToolType.pan) {
+                        _dragStartLocal = null;
+                        _dragStartObjectPos = null;
+                      } else if (_selectedTool == ToolType.selection && _dragStartPointer != null && (_dragStartPositions != null || _dragStartPathPoints != null)) {
+                        _dragStartPointer = null;
+                        _dragStartPositions = null;
+                        _dragStartPathPoints = null;
+                      } else if (_selectedTool == ToolType.selection && _selectionBoxStart != null) {
+                        _onSelectionBoxEnd();
+                      } else if (_selectedTool == ToolType.draw && _isDrawing) {
+                        _onScaleEnd(ScaleEndDetails());
+                      } else if (_draggingObjectIndex != null && _dragStartLocal != null) {
+                        _onScaleEnd(ScaleEndDetails());
+                      }
+                    },
+                    child: Container(
+                      color: Colors.grey[300],
+                      child: Center(
+                        child: Transform(
+                          transform: Matrix4.identity()
+                            ..translate(effectiveOffset.dx, effectiveOffset.dy)
+                            ..scale(_canvasScale),
+                          child: Stack(
+                            children: [
+                              // Доска
+                              Container(
+                                width: _boardSize.width,
+                                height: _boardSize.height,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(color: Colors.grey, width: 3),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 8,
+                                      spreadRadius: 2,
                                     ),
-                                ],
-                              );
-                            }).toList(),
-                            // Board objects
-                            ..._objects.asMap().entries.map((entry) {
-                              final obj = entry.value;
-                              final idx = entry.key;
-                              final isSelected = _selectedObjectIndices.contains(idx);
-                              return Positioned(
-                                left: obj.position.dx,
-                                top: obj.position.dy,
-                                child: BoardObjectWidget(
-                                  object: obj,
-                                  isSelected: isSelected,
-                                ),
-                              );
-                            }).toList(),
-                            // Selection box
-                            if (_selectionBoxStart != null && _selectionBoxEnd != null)
-                              Positioned(
-                                left: min(_selectionBoxStart!.dx, _selectionBoxEnd!.dx),
-                                top: min(_selectionBoxStart!.dy, _selectionBoxEnd!.dy),
-                                child: IgnorePointer(
-                                  child: DashedRect(
-                                    color: Colors.blue,
-                                    strokeWidth: 2,
-                                    gap: 6,
-                                    width: (_selectionBoxStart!.dx - _selectionBoxEnd!.dx).abs(),
-                                    height: (_selectionBoxStart!.dy - _selectionBoxEnd!.dy).abs(),
-                                  ),
+                                  ],
                                 ),
                               ),
-                          ],
+                              // Paths (рисование)
+                              ..._paths.asMap().entries.map((entry) {
+                                final idx = entry.key;
+                                final path = entry.value;
+                                final isSelected = _selectedPathIndices.contains(idx);
+                                return Stack(
+                                  children: [
+                                    CustomPaint(
+                                      size: _boardSize,
+                                      painter: BoardPainter([path]),
+                                    ),
+                                    if (isSelected)
+                                      Positioned(
+                                        left: BoardUtils.boundingBoxForPath(path).left,
+                                        top: BoardUtils.boundingBoxForPath(path).top,
+                                        child: DashedRect(
+                                          color: Colors.blue,
+                                          strokeWidth: 2,
+                                          gap: 6,
+                                          width: BoardUtils.boundingBoxForPath(path).width,
+                                          height: BoardUtils.boundingBoxForPath(path).height,
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              }).toList(),
+                              // Board objects
+                              ..._objects.asMap().entries.map((entry) {
+                                final obj = entry.value;
+                                final idx = entry.key;
+                                final isSelected = _selectedObjectIndices.contains(idx);
+                                return Positioned(
+                                  left: obj.position.dx,
+                                  top: obj.position.dy,
+                                  child: BoardObjectWidget(
+                                    object: obj,
+                                    isSelected: isSelected,
+                                    onResize: isSelected ? (direction, details) {
+                                      _handleResize(idx, direction, details);
+                                    } : null,
+                                  ),
+                                );
+                              }).toList(),
+                              // Selection box
+                              if (_selectionBoxStart != null && _selectionBoxEnd != null)
+                                Positioned(
+                                  left: min(_selectionBoxStart!.dx, _selectionBoxEnd!.dx),
+                                  top: min(_selectionBoxStart!.dy, _selectionBoxEnd!.dy),
+                                  child: IgnorePointer(
+                                    child: DashedRect(
+                                      color: Colors.blue,
+                                      strokeWidth: 2,
+                                      gap: 6,
+                                      width: (_selectionBoxStart!.dx - _selectionBoxEnd!.dx).abs(),
+                                      height: (_selectionBoxStart!.dy - _selectionBoxEnd!.dy).abs(),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

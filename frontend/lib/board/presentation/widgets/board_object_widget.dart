@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import '../../domain/models/board_models.dart';
 import 'dashed_rect.dart';
 
+enum ResizeDirection { topLeft, topRight, bottomLeft, bottomRight }
+
 class BoardObjectWidget extends StatelessWidget {
   final BoardObject object;
   final bool isSelected;
+  final void Function(ResizeDirection direction, DragUpdateDetails details)? onResize;
 
   const BoardObjectWidget({
     Key? key,
     required this.object,
     required this.isSelected,
+    this.onResize,
   }) : super(key: key);
 
   @override
@@ -47,7 +51,7 @@ class BoardObjectWidget extends StatelessWidget {
           child: Text(
             object.text ?? '',
             style: TextStyle(
-              fontSize: 20, 
+              fontSize: object.size.height * 0.5, // Пропорционально высоте контейнера
               color: object.color, 
               fontWeight: FontWeight.bold
             ),
@@ -82,7 +86,63 @@ class BoardObjectWidget extends StatelessWidget {
               ),
             ),
           ),
+        if (isSelected)
+          ..._buildResizeHandles(object.size),
       ],
+    );
+  }
+
+  List<Widget> _buildResizeHandles(Size size) {
+    const double handleSize = 16;
+    return [
+      // Top-left
+      Positioned(
+        left: -handleSize / 2,
+        top: -handleSize / 2,
+        child: GestureDetector(
+          onPanUpdate: (details) => onResize?.call(ResizeDirection.topLeft, details),
+          child: _resizeHandle(),
+        ),
+      ),
+      // Top-right
+      Positioned(
+        right: -handleSize / 2,
+        top: -handleSize / 2,
+        child: GestureDetector(
+          onPanUpdate: (details) => onResize?.call(ResizeDirection.topRight, details),
+          child: _resizeHandle(),
+        ),
+      ),
+      // Bottom-left
+      Positioned(
+        left: -handleSize / 2,
+        bottom: -handleSize / 2,
+        child: GestureDetector(
+          onPanUpdate: (details) => onResize?.call(ResizeDirection.bottomLeft, details),
+          child: _resizeHandle(),
+        ),
+      ),
+      // Bottom-right
+      Positioned(
+        right: -handleSize / 2,
+        bottom: -handleSize / 2,
+        child: GestureDetector(
+          onPanUpdate: (details) => onResize?.call(ResizeDirection.bottomRight, details),
+          child: _resizeHandle(),
+        ),
+      ),
+    ];
+  }
+
+  Widget _resizeHandle() {
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.blue, width: 2),
+        shape: BoxShape.circle,
+      ),
     );
   }
 } 
