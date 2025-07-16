@@ -55,6 +55,7 @@ class _BordPageState extends State<BoardPage> {
   double _canvasScale = 1.0;
   double _initialScale = 1.0;
   int _nextObjZPos = 1;
+  bool _isSending = false;
 
   void _onToolSelected(ToolType tool) {
     setState(() {
@@ -383,12 +384,21 @@ class _BordPageState extends State<BoardPage> {
 
   // Функция отправки только объектов из очереди
   Future<void> _sendBoardToBackend() async {
+    if (_isSending) return; // Prevent multiple sends
+    
+    setState(() {
+      _isSending = true;
+    });
+
     final box = await Hive.openBox('user_parameters');
     final token = box.get('token');
     if (token == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Токен не найден!')),
       );
+      setState(() {
+        _isSending = false;
+      });
       return;
     }
 
@@ -438,6 +448,9 @@ class _BordPageState extends State<BoardPage> {
         await Future.delayed(const Duration(seconds: 3));
       }
     }
+    setState(() {
+          _isSending = false;
+        });
   }
 
   @override
@@ -448,13 +461,28 @@ class _BordPageState extends State<BoardPage> {
       appBar: AppBar(
         title: const Text('Доска продуктивности'),
         actions: [
+        if (_isSending)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+            ),
+          )
+        else
           IconButton(
             icon: const Icon(Icons.save),
             tooltip: 'Сохранить доску',
             onPressed: _sendBoardToBackend,
           ),
-          settingsButton(context),
-        ],
+        settingsButton(context),
+      ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
