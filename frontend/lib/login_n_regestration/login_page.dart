@@ -34,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
       // Request to backend
       final response = await http.post(
         Uri.parse(
-          'localhost:8080'
+          'http://localhost:8080'
         ),
         headers: {'Content-Type': 'application/json'},
         body: '{"username": "$username", "password": "$password"}',
