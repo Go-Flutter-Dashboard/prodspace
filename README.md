@@ -31,7 +31,7 @@
 
 #### Documentation (4 points)
 - [x] Project overview and setup instructions (1 point)
-- [x] Screenshots and GIFs of key features (1 point)
+- [x] Screenshots and GIFs аof key features (1 point)
 - [x] API documentation (1 point)
 - [x] Architecture diagrams and explanations (1 point)
 
@@ -40,13 +40,13 @@
 - [x] Code review participation and resolution (1 point) (locally verifying code)
 
 ### Bonus Features (up to 10 points)
-- [x] Localization for Russian (RU) and English (ENG) languages (2 points)
+- [] Localization for Russian (RU) and English (ENG) languages (2 points)
 - [x] Good UI/UX design (up to 3 points)
 - [ ] Integration with external APIs (fitness trackers, health devices) (up to 5 points)
 - [x] Comprehensive error handling and user feedback (up to 2 points)
 - [ ] Advanced animations and transitions (up to 3 points)
 - [ ] Widget implementation for native mobile elements (up to 2 points)
 
-Total points implemented: 30/30 (excluding bonus points)
+Total points implemented: 28/30 (excluding bonus points)
 
 Note: For each implemented feature, provide a brief description or link to the relevant implementation below the checklist.
