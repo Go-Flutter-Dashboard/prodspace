@@ -2,24 +2,22 @@ import 'package:flutter/material.dart';
 import 'login_n_regestration/logged_in.dart';
 import 'pages.dart';
 import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'theme/app_theme.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Path to folder with user variables
   if (!kIsWeb) {
     final appDocDir = await getApplicationDocumentsDirectory();
-    // Box with user variables init
     Hive.init(appDocDir.path);
-    // Create box for user parameters
-    await Hive.openBox('user_parameters');
-    // Create box for settings
-    await Hive.openBox('settings');
-    // Create box for uncommited changes in canvas
-    await Hive.openBox('changes');
+  } else {
+    await Hive.initFlutter();
   }
+  await Hive.openBox('user_parameters');
+  await Hive.openBox('settings');
+  await Hive.openBox('changes');
   runApp(MyApp());
 }
 
