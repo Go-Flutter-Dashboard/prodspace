@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:prodspace/l10n/app_localizations.dart';
 import 'package:prodspace/login_n_regestration/logged_in.dart';
 import 'package:prodspace/settings/presentations/widgets/settings_btn.dart';
 
@@ -97,7 +98,7 @@ class _LoginPageState extends State<LoginPage> {
     var colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Login"),
+        title: Text(AppLocalizations.of(context)!.login),
         backgroundColor: colorScheme.tertiary,
         foregroundColor: colorScheme.onTertiary,
         actions: [
@@ -111,8 +112,8 @@ class _LoginPageState extends State<LoginPage> {
             child: isLoading ? Center(child: CircularProgressIndicator()) :
             Column(
               children: [
-                const Text(
-                  'Login to Your Account',
+                Text(
+                  AppLocalizations.of(context)!.loginToAccount,
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
@@ -126,14 +127,14 @@ class _LoginPageState extends State<LoginPage> {
                         children: [
                           TextFormField(
                             controller: _nameController,
-                            decoration: const InputDecoration(
-                              labelText: 'Username',
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.username,
                             ),
                             autovalidateMode:
                                 AutovalidateMode.onUserInteraction,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Enter username';
+                                return AppLocalizations.of(context)!.enterUsername;
                               }
                               return null;
                             },
@@ -141,8 +142,8 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 12),
                           TextFormField(
                             controller: _passwordController,
-                            decoration: const InputDecoration(
-                              labelText: 'Password',
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.password,
                             ),
                             obscureText: true,
                             autovalidateMode:
@@ -150,12 +151,12 @@ class _LoginPageState extends State<LoginPage> {
                             validator: (value) =>
                                 value != null && value.length >= 6
                                 ? null
-                                : 'Min 6 characters',
+                                : AppLocalizations.of(context)!.min6chars,
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: _submit,
-                            child: const Text('Login'),
+                            child: Text(AppLocalizations.of(context)!.login),
                           ),
                         ],
                       ),
@@ -166,7 +167,7 @@ class _LoginPageState extends State<LoginPage> {
                 TextButton(
                   onPressed: () =>
                       Navigator.pushReplacementNamed(context, '/register'),
-                  child: const Text('Don\'t have an account? Register'),
+                  child: Text(AppLocalizations.of(context)!.dontHaveAccount),
                 ),
               ],
             ),

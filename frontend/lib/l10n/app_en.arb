@@ -1,0 +1,20 @@
+{
+  "appTitle": "Your Workspace",
+  "login": "Login",
+  "register": "Register",
+  "username": "Username",
+  "password": "Password",
+  "loginToAccount": "Login to Your Account",
+  "dontHaveAccount": "Don't have an account? Register",
+  "enterUsername": "Enter username",
+  "min6chars": "Min 6 characters",
+  "darkMode": "Dark Mode",
+  "useSystemTheme": "Use System Theme",
+  "settings": "Settings",
+  "darkModeEnabled": "Dark mode enabled",
+  "lightModeEnabled": "Ligth mode enabled",
+  "systemModeEnabled": "System mode enabled",
+  "createAccount": "Create an Account",
+  "submit": "Sumbit",
+  "haveAccount": "Already have an account? Login"
+} 

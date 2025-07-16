@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prodspace/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'login_n_regestration/logged_in.dart';
 import 'pages.dart';
@@ -7,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'theme/theme_provider.dart';
 import 'theme/app_theme.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,10 +54,20 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       navigatorKey: navigatorKey,
-      title: 'Your Workspace',
+      title: AppLocalizations.of(context)?.appTitle ?? 'Your Workspace',
       theme: AppThemes.lightTheme,
       darkTheme: AppThemes.darkTheme,
       themeMode: themeProvider.themeMode,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('ru'),
+      ],
       initialRoute: '/',
       routes: {
         '/': (context) => FutureBuilder<bool>(

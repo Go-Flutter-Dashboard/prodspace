@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prodspace/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:prodspace/theme/theme_provider.dart';
 
@@ -17,7 +18,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(AppLocalizations.of(context)!.settings),
         backgroundColor: theme.colorScheme.tertiary,
         foregroundColor: theme.colorScheme.onTertiary,
       ),
@@ -30,7 +31,7 @@ class _SettingsPageState extends State<SettingsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Dark Mode', style: theme.textTheme.titleMedium),
+                Text(AppLocalizations.of(context)!.darkMode, style: theme.textTheme.titleMedium),
                 Switch(
                   value: themeProvider.isDarkMode,
                   onChanged: (value) async {
@@ -38,7 +39,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     setState(() {});
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(value ? 'Dark mode enabled' : 'Light mode enabled'),
+                        content: Text(value ? AppLocalizations.of(context)!.darkModeEnabled : AppLocalizations.of(context)!.lightModeEnabled),
                         duration: const Duration(seconds: 1),
                       ),
                     );
@@ -51,7 +52,7 @@ class _SettingsPageState extends State<SettingsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Use System Theme', style: theme.textTheme.titleMedium),
+                Text(AppLocalizations.of(context)!.useSystemTheme, style: theme.textTheme.titleMedium),
                 Switch(
                   value: themeProvider.isSystemMode,
                   onChanged: (value) async {
@@ -59,7 +60,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     setState(() {});
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(value ? 'System theme enabled' : 'Light mode enabled'),
+                        content: Text(value ? AppLocalizations.of(context)!.systemModeEnabled : AppLocalizations.of(context)!.lightModeEnabled),
                         duration: const Duration(seconds: 1),
                       ),
                     );

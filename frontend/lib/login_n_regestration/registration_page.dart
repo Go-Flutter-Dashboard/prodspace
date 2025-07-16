@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:prodspace/l10n/app_localizations.dart';
 import 'package:prodspace/login_n_regestration/logged_in.dart';
 import 'package:prodspace/settings/presentations/widgets/settings_btn.dart';
 
@@ -13,6 +14,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+  
   // Controllers for name and password
   final _nameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -94,10 +96,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     var colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register'),
+        title: Text(localizations.register),
         backgroundColor: colorScheme.tertiary,
         foregroundColor: colorScheme.onTertiary,
         actions: [
@@ -111,8 +114,8 @@ class _RegisterPageState extends State<RegisterPage> {
             child: isLoading ? Center(child: CircularProgressIndicator()) :
             Column(
               children: [
-                const Text(
-                  'Create an Account',
+                Text(
+                  localizations.createAccount,
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
@@ -125,11 +128,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         children: [
                           TextFormField(
                             controller: _nameController,
-                            decoration: const InputDecoration(
-                              labelText: 'Username',
+                            decoration: InputDecoration(
+                              labelText: localizations.username,
                             ),
                             validator: (value) => value == null || value.isEmpty
-                                ? 'Enter username'
+                                ? localizations.enterUsername
                                 : null,
                           ),
                           const SizedBox(height: 12),
@@ -137,19 +140,19 @@ class _RegisterPageState extends State<RegisterPage> {
                             controller: _passwordController,
                             autovalidateMode:
                                 AutovalidateMode.onUserInteraction,
-                            decoration: const InputDecoration(
-                              labelText: 'Password',
+                            decoration: InputDecoration(
+                              labelText: localizations.password,
                             ),
                             obscureText: true,
                             validator: (value) =>
                                 value != null && value.length >= 6
                                 ? null
-                                : 'Min 6 characters',
+                                : localizations.min6chars,
                           ),
                           const SizedBox(height: 24),
                           ElevatedButton(
                             onPressed: _submit,
-                            child: const Text('Submit'),
+                            child: Text(localizations.submit),
                           ),
                         ],
                       ),
@@ -160,7 +163,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 TextButton(
                   onPressed: () =>
                       Navigator.pushReplacementNamed(context, '/login'),
-                  child: Text('Already have an account? Login'),
+                  child: Text(localizations.haveAccount),
                 ),
               ],
             ),
