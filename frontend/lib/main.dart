@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'functions/logged_in.dart';
-import 'pages/pages.dart';
-import 'board/presentation/pages/board_page.dart';
+import 'login_n_regestration/logged_in.dart';
+import 'pages.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -46,17 +45,16 @@ class MyApp extends StatelessWidget {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
-            // if (snapshot.data == true) {
-            //   return const WorkspacePage();
-            // } else {
-            //   return const LoginPage(); 
-            // }
-            return const BoardPage();
+            if (snapshot.data == true) {
+              return const BoardPage();
+            } else {
+              return const LoginPage(); 
+            }
           },
         ),
         '/home': (context) => const BoardPage(),
         '/login': (context) => const LoginPage(),
-        // '/register': (context) => const RegisterPage(),
+        '/register': (context) => const RegisterPage(),
       },
     );
   }
