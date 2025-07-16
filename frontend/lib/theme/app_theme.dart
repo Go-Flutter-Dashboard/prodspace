@@ -16,10 +16,4 @@ class AppThemes {
     ),
     useMaterial3: true,
   );
-
-  static ThemeMode thememode = ThemeMode.system;
-
-  static setThemeMode(ThemeMode newTM) {
-    thememode = newTM;
-  }
 }

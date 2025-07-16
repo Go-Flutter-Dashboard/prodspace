@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'login_n_regestration/logged_in.dart';
 import 'pages.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
+import 'theme/theme_provider.dart';
 import 'theme/app_theme.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -18,7 +19,16 @@ void main() async {
   await Hive.openBox('user_parameters');
   await Hive.openBox('settings');
   await Hive.openBox('changes');
-  runApp(MyApp());
+
+  final themeProvider = ThemeProvider();
+  await themeProvider.initialize();
+
+  runApp(
+    ChangeNotifierProvider.value(
+      value: themeProvider,
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -30,12 +40,22 @@ class MyApp extends StatelessWidget {
   // This widget is the root of the application.
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    if (themeProvider.isLoading) {
+      return const MaterialApp(
+        home: Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'Your Workspace',
       theme: AppThemes.lightTheme,
       darkTheme: AppThemes.darkTheme,
-      themeMode: AppThemes.thememode,
+      themeMode: themeProvider.themeMode,
       initialRoute: '/',
       routes: {
         '/': (context) => FutureBuilder<bool>(
@@ -45,17 +65,17 @@ class MyApp extends StatelessWidget {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
-            return const BoardPage();
-            // if (snapshot.data == true) {
-            //   return const BoardPage();
-            // } else {
-            //   return const LoginPage(); 
-            // }
+            if (snapshot.data == true) {
+              return const BoardPage();
+            } else {
+              return const LoginPage(); 
+            }
           },
         ),
         '/home': (context) => const BoardPage(),
-        //'/login': (context) => const LoginPage(),
-        //'/register': (context) => const RegisterPage(),
+        '/login': (context) => const LoginPage(),
+        '/register': (context) => const RegisterPage(),
+        '/settings': (context) => const SettingsPage(),
       },
     );
   }

@@ -13,6 +13,7 @@ import '../widgets/color_picker_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
 import 'package:flutter/gestures.dart';
+import 'package:prodspace/settings/presentations/widgets/settings_btn.dart';
 
 class BoardPage extends StatefulWidget {
   const BoardPage({super.key});
@@ -343,7 +344,7 @@ class _BordPageState extends State<BoardPage> {
   Widget build(BuildContext context) {
     final hasSelection = _selectedObjectIndices.isNotEmpty || _selectedPathIndices.isNotEmpty;
     return Scaffold(
-      appBar: AppBar(title: const Text('Интерактивная доска')),
+      appBar: AppBar(title: const Text('Интерактивная доска'), actions: [settingsButton(context)],),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final Offset effectiveOffset = _canvasOffset;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:prodspace/login_n_regestration/logged_in.dart';
+import 'package:prodspace/settings/presentations/widgets/settings_btn.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -99,6 +100,9 @@ class _LoginPageState extends State<LoginPage> {
         title: const Text("Login"),
         backgroundColor: colorScheme.tertiary,
         foregroundColor: colorScheme.onTertiary,
+        actions: [
+        settingsButton(context),
+      ],
       ),
       body: Center(
         child: SingleChildScrollView(
