@@ -50,6 +50,8 @@ class _BordPageState extends State<BoardPage> {
   double _initialScale = 1.0;
   int _nextObjZPos = 1;
   bool _isSending = false;
+  bool _isDownloading = false;
+  bool _isDownloaded = false;
 
   void _onToolSelected(ToolType tool) {
     setState(() {
@@ -167,7 +169,7 @@ class _BordPageState extends State<BoardPage> {
         _isDrawing = true;
         final Offset boardPos =
             details.localFocalPoint / _boardSize.width * 2000;
-        _currentPath = DrawPath([boardPos], _drawColor, 3.0);
+        _currentPath = DrawPath(points: [boardPos], color: _drawColor, strokeWidth: 3.0);
         _paths.add(_currentPath!);
       });
       return;
@@ -318,7 +320,7 @@ class _BordPageState extends State<BoardPage> {
         _objects[i] = _objects[i].copyWith(color: color);
       }
       for (final i in _selectedPathIndices) {
-        _paths[i] = DrawPath(_paths[i].points, color, _paths[i].strokeWidth);
+        _paths[i] = DrawPath(points: _paths[i].points, color:  color, strokeWidth: _paths[i].strokeWidth);
       }
       _colorPickerValue = color;
     });
@@ -387,8 +389,10 @@ class _BordPageState extends State<BoardPage> {
     });
 
     final box = await Hive.openBox('user_parameters');
+
     // Save in guest mode
     if (box.get('username') == "Guest Mode") {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('You cannot do it in guest mode. Register or Login to save your changes')),
       );
@@ -397,9 +401,11 @@ class _BordPageState extends State<BoardPage> {
       });
       return;
     }
+
     final token = box.get('token');
     // Token is missed
     if (token == null) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Токен не найден!')),
       );
@@ -413,22 +419,26 @@ class _BordPageState extends State<BoardPage> {
     final List<BoardItem> queueCopy = List.from(_sendQueue);
     for (int i = 0; i < queueCopy.length; i++) {
       try {
-      final message = await BoardBackendConnectionUtils.sendBoardItem(queueCopy[i], token);
-      if (message == null) {
-        setState(() {
-          _sendQueue.remove(queueCopy[i]); // Удаляем из очереди после успешной отправки
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          (queueCopy[i] is BoardItemObject)
-          ? SnackBar(content: Text('Объект: ${(queueCopy[i] as BoardItemObject).object.zPos} успешно отправлен!'), duration: Duration(milliseconds: 500),)
-          : SnackBar(content: Text('Объект: Drawing успешно отправлен!'), duration: Duration(milliseconds: 500),),
-        );
+        // Send request and recive error message
+        final message = await BoardBackendConnectionUtils.sendBoardItem(queueCopy[i], token);
+        if (message == null) {
+          setState(() {
+            _sendQueue.remove(queueCopy[i]); // Удаляем из очереди после успешной отправки
+          });
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            (queueCopy[i] is BoardItemObject)
+            ? SnackBar(content: Text('Объект: ${(queueCopy[i] as BoardItemObject).object.zPos} успешно отправлен!'), duration: Duration(milliseconds: 500),)
+            : SnackBar(content: Text('Объект: Drawing успешно отправлен!'), duration: Duration(milliseconds: 500),),
+          );
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Ошибка отправки объекта: $message')),
         );
       }
       } catch (e) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Ошибка соединения при отправке объекта: ${e.toString()}')),
         );
@@ -439,8 +449,67 @@ class _BordPageState extends State<BoardPage> {
     });
   }
 
+  Future<void> _getBoardFromDB() async {
+    // Set downloading state
+    setState(() {
+      _isDownloading = true;
+    });
+
+    final box = await Hive.openBox('user_parameters');
+    final token = box.get('token');
+    // Token is missed
+    if (token == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Токен не найден!')),
+      );
+      setState(() {
+        _isDownloading = false;
+        _isDownloaded = true;
+      });
+      return;
+    }
+
+    // Get items in json
+    final items = await BoardBackendConnectionUtils.getWorkspaceItems(token);
+    if (items == []) {
+        setState(() {
+        _isDownloading = false;
+        _isDownloaded = true;
+      });
+      return;
+    }
+    for (int i = 0; i < items.length; i++) {
+      final item = await BoardBackendConnectionUtils.createBoardItem(items[i]);
+      if (item is BoardItemObject) {
+        _objects.add(item.object);
+      }
+      else if (item is BoardItemPath) {
+        _paths.add(item.path);
+      }
+      else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error while parsing ${items[i].toString()}')),
+      );
+      }
+    }
+    setState(() {
+      _isDownloading = false;
+      _isDownloaded = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (!_isDownloaded) {
+      _getBoardFromDB();
+    }
+    if (_isDownloading) {
+      return Scaffold(
+      appBar: AppBar(title: Text("Loading your Workspace..."),),
+      body: Center(child: CircularProgressIndicator()));
+    }
     final hasSelection =
         _selectedObjectIndices.isNotEmpty || _selectedPathIndices.isNotEmpty;
     return Scaffold(
@@ -495,8 +564,7 @@ class _BordPageState extends State<BoardPage> {
                       final boardPos = _screenToBoardCoordinates(
                         details.localPosition,
                       );
-                      if (!BoardUtils.isInsideBoard(boardPos, _boardSize))
-                        return;
+                      if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
                       _onTapBoard(boardPos);
                     },
                     onScaleStart: (details) {
@@ -508,8 +576,7 @@ class _BordPageState extends State<BoardPage> {
                         final boardPos = _screenToBoardCoordinates(
                           details.localFocalPoint,
                         );
-                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize))
-                          return;
+                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
                         final idx = BoardUtils.findObjectAt(boardPos, _objects);
                         final pathIdx = BoardUtils.findPathAt(boardPos, _paths);
                         if (idx != null &&
@@ -573,8 +640,7 @@ class _BordPageState extends State<BoardPage> {
                         final boardPos = _screenToBoardCoordinates(
                           details.localFocalPoint,
                         );
-                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize))
-                          return;
+                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
                         final delta = (boardPos - _dragStartPointer!);
                         setState(() {
                           if (_dragStartPositions != null) {
@@ -589,9 +655,9 @@ class _BordPageState extends State<BoardPage> {
                             for (final i in _selectedPathIndices) {
                               final startPoints = _dragStartPathPoints![i]!;
                               _paths[i] = DrawPath(
-                                startPoints.map((p) => p + delta).toList(),
-                                _paths[i].color,
-                                _paths[i].strokeWidth,
+                                points: startPoints.map((p) => p + delta).toList(),
+                                color: _paths[i].color,
+                                strokeWidth: _paths[i].strokeWidth,
                               );
                             }
                           }
@@ -601,8 +667,7 @@ class _BordPageState extends State<BoardPage> {
                         final boardPos = _screenToBoardCoordinates(
                           details.localFocalPoint,
                         );
-                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize))
-                          return;
+                        if (!BoardUtils.isInsideBoard(boardPos, _boardSize)) return;
                         _onSelectionBoxUpdate(boardPos);
                       } else if (_selectedTool == ToolType.draw && _isDrawing) {
                         _onScaleUpdate(
@@ -706,7 +771,7 @@ class _BordPageState extends State<BoardPage> {
                                       ),
                                   ],
                                 );
-                              }).toList(),
+                              }),
                               // Board objects
                               ..._objects.asMap().entries.map((entry) {
                                 final obj = entry.value;
@@ -730,7 +795,7 @@ class _BordPageState extends State<BoardPage> {
                                         : null,
                                   ),
                                 );
-                              }).toList(),
+                              }),
                               // Selection box
                               if (_selectionBoxStart != null &&
                                   _selectionBoxEnd != null)

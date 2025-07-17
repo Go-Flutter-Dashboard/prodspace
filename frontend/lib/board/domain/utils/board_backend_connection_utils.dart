@@ -9,6 +9,8 @@ class BoardBackendConnectionUtils {
     // Create json to send
     dynamic boardData = item.toJson();
 
+    debugPrint(boardData.toString());
+
     // Print resulted json
     debugPrint('boardData: ${jsonEncode(boardData)}');
 
@@ -28,5 +30,38 @@ class BoardBackendConnectionUtils {
     } catch (e) {
       rethrow;
     }
-  } 
+  }
+
+  static Future<List<Map<String, dynamic>>> getWorkspaceItems(String token) async {
+    // Send request
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost:3000/workspaces/my'),
+        headers: {
+          'Authorization': "Bearer $token",
+          'Content-Type': 'application/json',
+        },
+      );
+      final items = jsonDecode(response.body)["items"];
+      if (items == null) {
+        return [];
+      }
+      List<Map<String, dynamic>> result = [];
+      for (int i = 0; i < items.length; i++) {
+        result.add(items[i] as Map<String, dynamic>);
+      }
+      return result;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<BoardItem> createBoardItem(Map<String, dynamic> json) async {
+    debugPrint(json.toString());
+    if (json.containsKey("drawing")) {
+      return BoardItemPath(DrawPath.fromJson(json));
+    } else {
+      return BoardItemObject(BoardObject.fromJson(json));
+    }
+  }
 }
