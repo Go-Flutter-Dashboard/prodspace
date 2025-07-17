@@ -3,6 +3,7 @@
 ### Technical requirements (20 points)
 #### Backend development (8 points)
 - [x] Go-based microservices architecture (minimum 3 services) (3 points)
+- [ ] gRPC implementation for communication between microservices (1 point)
 - [x] RESTful API with Swagger documentation (1 point)
 - [x] PostgreSQL database with proper schema design (1 point)
 - [x] JWT-based authentication and authorization (1 point)
@@ -20,7 +21,7 @@
 - [x] Docker compose for all services (1 point)
 - [x] CI/CD pipeline implementation (1 point)
 - [x] Environment configuration management using config files (1 point)
-- [] GitHub pages for the project (1 point)
+- [x] GitHub pages for the project (1 point)
 
 ### Non-Technical Requirements (10 points)
 #### Project management (4 points)
@@ -40,13 +41,13 @@
 - [x] Code review participation and resolution (1 point) (locally verifying code)
 
 ### Bonus Features (up to 10 points)
-- [] Localization for Russian (RU) and English (ENG) languages (2 points)
+- [x] Localization for Russian (RU) and English (ENG) languages (2 points)
 - [x] Good UI/UX design (up to 3 points)
 - [ ] Integration with external APIs (fitness trackers, health devices) (up to 5 points)
 - [x] Comprehensive error handling and user feedback (up to 2 points)
 - [ ] Advanced animations and transitions (up to 3 points)
 - [ ] Widget implementation for native mobile elements (up to 2 points)
 
-Total points implemented: 27/30 (excluding bonus points)
+Total points implemented: 29/30 (excluding bonus points)
 
 Note: For each implemented feature, provide a brief description or link to the relevant implementation below the checklist.
