@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:prodspace/l10n/app_localizations.dart';
 
 class ColorPickerDialog extends StatefulWidget {
   final Color initialColor;
@@ -22,7 +23,7 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Выберите цвет'),
+      title: Text(AppLocalizations.of(context)!.chooseColor),
       content: SingleChildScrollView(
         child: BlockPicker(
           pickerColor: _color,

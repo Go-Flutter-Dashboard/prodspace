@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:prodspace/board/domain/utils/board_backend_connection_utils.dart';
+import 'package:prodspace/l10n/app_localizations.dart';
 import 'dart:math';
 import '../../domain/models/board_models.dart';
 import '../../domain/utils/board_utils.dart';
@@ -146,7 +147,7 @@ class _BordPageState extends State<BoardPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Введите текст'),
+          title: Text(AppLocalizations.of(context)!.inputText),
           content: TextField(
             autofocus: true,
             onChanged: (v) => value = v,
@@ -387,6 +388,7 @@ class _BordPageState extends State<BoardPage> {
 
   // Функция отправки только объектов из очереди
   Future<void> _sendBoardToBackend() async {
+    var localization = AppLocalizations.of(context)!;
     if (_isSending) return; // Prevent multiple sends
     
     // Show loading icon
@@ -400,7 +402,7 @@ class _BordPageState extends State<BoardPage> {
     if (box.get('username') == "Guest Mode") {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You cannot do it in guest mode. Register or Login to save your changes')),
+        SnackBar(content: Text(localization.saveInGuestMode)),
       );
       setState(() {
         _isSending = false;
@@ -413,7 +415,7 @@ class _BordPageState extends State<BoardPage> {
     if (token == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Токен не найден!')),
+        SnackBar(content: Text(localization.noToken)),
       );
       setState(() {
         _isSending = false;
@@ -443,20 +445,17 @@ class _BordPageState extends State<BoardPage> {
               });
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
-                (queueCopy[i] is BoardItemObject)
-                ? SnackBar(content: Text('Изменение: ${(queueCopy[i] as BoardItemObject).object.zPos} успешно отправлен!'), duration: Duration(milliseconds: 500),)
-                : SnackBar(content: Text('Изменение: Drawing успешно отправлен!'), duration: Duration(milliseconds: 500),),
-              );
+                SnackBar(content: Text(localization.changeSuccess), duration: Duration(milliseconds: 500)));
             } else {
             if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Ошибка при отправке изменений объекта: $message')),
+              SnackBar(content: Text('${localization.changeErr}: $message')),
             );
             }
       } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка соединения при отправке изменений: ${e.toString()}')),
+          SnackBar(content: Text('${localization.changeErr}: ${e.toString()}')),
         );
       }
     }
@@ -477,7 +476,7 @@ class _BordPageState extends State<BoardPage> {
     if (token == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Токен не найден!')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.noToken)),
       );
       setState(() {
         _isDownloading = false;
@@ -506,7 +505,7 @@ class _BordPageState extends State<BoardPage> {
       else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error while parsing ${items[i].toString()}')),
+        SnackBar(content: Text('${AppLocalizations.of(context)!.parseErr} ${items[i].toString()}')),
       );
       }
     }
@@ -518,19 +517,20 @@ class _BordPageState extends State<BoardPage> {
 
   @override
   Widget build(BuildContext context) {
+    var localization = AppLocalizations.of(context)!;
     if (!_isDownloaded) {
       _getBoardFromDB();
     }
     if (_isDownloading) {
       return Scaffold(
-      appBar: AppBar(title: Text("Loading your Workspace..."),),
+      appBar: AppBar(title: Text(localization.workspaceLoading),),
       body: Center(child: CircularProgressIndicator()));
     }
     final hasSelection =
         _selectedObjectIndices.isNotEmpty || _selectedPathIndices.isNotEmpty;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Доска продуктивности'),
+        title: Text(localization.workspace),
         actions: [
         if (_isSending)
           Padding(
@@ -549,7 +549,7 @@ class _BordPageState extends State<BoardPage> {
         else
           IconButton(
             icon: const Icon(Icons.save),
-            tooltip: 'Сохранить доску',
+            tooltip: localization.saveBoard,
             onPressed: _sendBoardToBackend,
           ),
         settingsButton(context),

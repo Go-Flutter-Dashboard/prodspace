@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prodspace/l10n/app_localizations.dart';
 import '../../domain/models/board_models.dart';
 import 'color_picker_dialog.dart';
 
@@ -26,16 +27,17 @@ class Toolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var localization = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _toolButton(Icons.pan_tool, ToolType.pan, 'Навигация'),
+          _toolButton(Icons.pan_tool, ToolType.pan, localization.navigaton),
           const SizedBox(width: 8),
-          _toolButton(Icons.mouse, ToolType.selection, 'Выделение'),
+          _toolButton(Icons.mouse, ToolType.selection, localization.mark),
           const SizedBox(width: 8),
-          _toolButton(Icons.crop_square, ToolType.rectangle, 'Прямоугольник'),
+          _toolButton(Icons.crop_square, ToolType.rectangle, localization.rect),
           _colorPickerButton(rectColor, () async {
             final color = await showDialog<Color>(
               context: context,
@@ -44,7 +46,7 @@ class Toolbar extends StatelessWidget {
             if (color != null) onRectColorChanged(color);
           }),
           const SizedBox(width: 8),
-          _toolButton(Icons.circle, ToolType.circle, 'Круг'),
+          _toolButton(Icons.circle, ToolType.circle, localization.circle),
           _colorPickerButton(circleColor, () async {
             final color = await showDialog<Color>(
               context: context,
@@ -53,7 +55,7 @@ class Toolbar extends StatelessWidget {
             if (color != null) onCircleColorChanged(color);
           }),
           const SizedBox(width: 8),
-          _toolButton(Icons.text_fields, ToolType.text, 'Текст'),
+          _toolButton(Icons.text_fields, ToolType.text, localization.text),
           _colorPickerButton(textColor, () async {
             final color = await showDialog<Color>(
               context: context,
@@ -62,9 +64,9 @@ class Toolbar extends StatelessWidget {
             if (color != null) onTextColorChanged(color);
           }),
           const SizedBox(width: 8),
-          _toolButton(Icons.edit, ToolType.draw, 'Рисование'),
+          _toolButton(Icons.edit, ToolType.draw, localization.drawing),
           const SizedBox(width: 8),
-          _toolButton(Icons.image, ToolType.image, 'Изображение'),
+          _toolButton(Icons.image, ToolType.image, localization.pic),
         ],
       ),
     );

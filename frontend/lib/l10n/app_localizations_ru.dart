@@ -70,4 +70,84 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get languageChanged => "Язык успешно изменен!";
+  
+  @override
+  // TODO: implement changeErr
+  String get changeErr => throw UnimplementedError();
+  
+  @override
+  // TODO: implement changeSuccess
+  String get changeSuccess => throw UnimplementedError();
+  
+  @override
+  // TODO: implement chooseColor
+  String get chooseColor => throw UnimplementedError();
+  
+  @override
+  // TODO: implement circle
+  String get circle => throw UnimplementedError();
+  
+  @override
+  // TODO: implement color
+  String get color => throw UnimplementedError();
+  
+  @override
+  // TODO: implement delete
+  String get delete => throw UnimplementedError();
+  
+  @override
+  // TODO: implement drawing
+  String get drawing => throw UnimplementedError();
+  
+  @override
+  // TODO: implement inputText
+  String get inputText => throw UnimplementedError();
+  
+  @override
+  // TODO: implement mark
+  String get mark => throw UnimplementedError();
+  
+  @override
+  // TODO: implement markerColor
+  String get markerColor => throw UnimplementedError();
+  
+  @override
+  // TODO: implement navigaton
+  String get navigaton => throw UnimplementedError();
+  
+  @override
+  // TODO: implement noToken
+  String get noToken => throw UnimplementedError();
+  
+  @override
+  // TODO: implement parseErr
+  String get parseErr => throw UnimplementedError();
+  
+  @override
+  // TODO: implement pic
+  String get pic => throw UnimplementedError();
+  
+  @override
+  // TODO: implement rect
+  String get rect => throw UnimplementedError();
+  
+  @override
+  // TODO: implement saveBoard
+  String get saveBoard => throw UnimplementedError();
+  
+  @override
+  // TODO: implement saveInGuestMode
+  String get saveInGuestMode => throw UnimplementedError();
+  
+  @override
+  // TODO: implement text
+  String get text => throw UnimplementedError();
+  
+  @override
+  // TODO: implement workspace
+  String get workspace => throw UnimplementedError();
+  
+  @override
+  // TODO: implement workspaceLoading
+  String get workspaceLoading => throw UnimplementedError();
 }

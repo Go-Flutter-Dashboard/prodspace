@@ -208,6 +208,46 @@ abstract class AppLocalizations {
   String get language;
 
   String get languageChanged;
+
+  String get inputText; //'Введите текст'
+
+  String get saveInGuestMode; //You cannot do it in guest mode. Register or Login to save your changes
+
+  String get noToken; //'Токен не найден!'
+
+  String get changeSuccess; // Изменение успешно отправлен
+
+  String get changeErr; // Ошибка при отправке изменений объекта
+
+  String get parseErr; // Error while parsing
+
+  String get workspaceLoading; // Loading your Workspace...
+
+  String get workspace; //Доска продуктивности
+
+  String get saveBoard; //'Сохранить доску'
+
+  String get chooseColor; //Выберите цвет
+
+  String get markerColor; // 'Цвет маркера:'
+
+  String get delete; // 'Удалить'
+
+  String get color; // 'Цвет'
+
+  String get navigaton; // 'Навигация'
+
+  String get mark; // Выделение'
+
+  String get rect; // 'Прямоугольник'
+
+  String get circle; // 'Круг'
+
+  String get text; // 'Текст'
+
+  String get drawing; // 'Рисование'
+
+  String get pic; // 'Изображение'
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

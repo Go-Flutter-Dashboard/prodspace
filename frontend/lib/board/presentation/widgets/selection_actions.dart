@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prodspace/l10n/app_localizations.dart';
 import 'color_picker_dialog.dart';
 
 class SelectionActions extends StatelessWidget {
@@ -23,7 +24,7 @@ class SelectionActions extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: onDelete,
             icon: const Icon(Icons.delete),
-            label: const Text('Удалить'),
+            label: Text(AppLocalizations.of(context)!.delete),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red[400]),
           ),
           const SizedBox(width: 12),
@@ -36,7 +37,7 @@ class SelectionActions extends StatelessWidget {
               if (color != null) onColorChanged(color);
             },
             icon: const Icon(Icons.color_lens),
-            label: const Text('Цвет'),
+            label: Text(AppLocalizations.of(context)!.color),
           ),
         ],
       ),

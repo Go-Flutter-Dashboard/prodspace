@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prodspace/l10n/app_localizations.dart';
 import 'color_picker_dialog.dart';
 
 class DrawColorPicker extends StatelessWidget {
@@ -17,7 +18,7 @@ class DrawColorPicker extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: Row(
         children: [
-          const Text('Цвет маркера:'),
+          Text(AppLocalizations.of(context)!.markerColor),
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () async {
