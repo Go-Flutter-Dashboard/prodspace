@@ -63,91 +63,73 @@ class AppLocalizationsEn extends AppLocalizations {
   String get haveAccount => 'Already have an account? Login';
 
   @override
-  String get enterWithoutRegistration => "Want to try without creating an account? Enter as Guest";
+  String get enterWithoutRegistration =>
+      "Want to try without creating an account? Enter as Guest";
 
   @override
   String get language => "Language";
 
   @override
   String get languageChanged => "Language successfully changed!";
-  
+
   @override
-  // TODO: implement changeErr
-  String get changeErr => throw UnimplementedError();
-  
+  String get changeErr => "Error saving changes";
+
   @override
-  // TODO: implement changeSuccess
-  String get changeSuccess => throw UnimplementedError();
-  
+  String get changeSuccess => "Changes saved successfully";
+
   @override
-  // TODO: implement chooseColor
-  String get chooseColor => throw UnimplementedError();
-  
+  String get chooseColor => "Choose color";
+
   @override
-  // TODO: implement circle
-  String get circle => throw UnimplementedError();
-  
+  String get circle => "Circle";
+
   @override
-  // TODO: implement color
-  String get color => throw UnimplementedError();
-  
+  String get color => "Color";
+
   @override
-  // TODO: implement delete
-  String get delete => throw UnimplementedError();
-  
+  String get delete => "Delete";
+
   @override
-  // TODO: implement drawing
-  String get drawing => throw UnimplementedError();
-  
+  String get drawing => "Drawing";
+
   @override
-  // TODO: implement inputText
-  String get inputText => throw UnimplementedError();
-  
+  String get inputText => "Enter text";
+
   @override
-  // TODO: implement mark
-  String get mark => throw UnimplementedError();
-  
+  String get mark => "Highlight";
+
   @override
-  // TODO: implement markerColor
-  String get markerColor => throw UnimplementedError();
-  
+  String get markerColor => "Marker color";
+
   @override
-  // TODO: implement navigaton
-  String get navigaton => throw UnimplementedError();
-  
+  String get navigaton => "Navigation";
+
   @override
-  // TODO: implement noToken
-  String get noToken => throw UnimplementedError();
-  
+  String get noToken => "Token not found!";
+
   @override
-  // TODO: implement parseErr
-  String get parseErr => throw UnimplementedError();
-  
+  String get parseErr => "Error while parsing";
+
   @override
-  // TODO: implement pic
-  String get pic => throw UnimplementedError();
-  
+  String get pic => "Image";
+
   @override
-  // TODO: implement rect
-  String get rect => throw UnimplementedError();
-  
+  String get rect => "Rectangle";
+
   @override
-  // TODO: implement saveBoard
-  String get saveBoard => throw UnimplementedError();
-  
+  String get saveBoard => "Save board";
+
   @override
-  // TODO: implement saveInGuestMode
-  String get saveInGuestMode => throw UnimplementedError();
-  
+  String get saveInGuestMode =>
+      "You can't do this in guest mode. Register or log in to save changes";
+
   @override
-  // TODO: implement text
-  String get text => throw UnimplementedError();
-  
+  String get text => "Text";
+
   @override
-  // TODO: implement workspace
-  String get workspace => throw UnimplementedError();
-  
+  String get workspace => "Productivity board";
+
   @override
-  // TODO: implement workspaceLoading
-  String get workspaceLoading => throw UnimplementedError();
+  String get workspaceLoading => "Loading your workspace...";
 }

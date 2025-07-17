@@ -63,91 +63,73 @@ class AppLocalizationsRu extends AppLocalizations {
   String get haveAccount => 'Уже есть аккаунт? Войти';
 
   @override
-  String get enterWithoutRegistration => "Хотите попробовать без регистрации? Войдите как гость";
+  String get enterWithoutRegistration =>
+      "Хотите попробовать без регистрации? Войдите как гость";
 
   @override
   String get language => "Язык";
 
   @override
   String get languageChanged => "Язык успешно изменен!";
-  
+
   @override
-  // TODO: implement changeErr
-  String get changeErr => throw UnimplementedError();
-  
+  String get changeErr => "Ошибка при отправке изменений";
+
   @override
-  // TODO: implement changeSuccess
-  String get changeSuccess => throw UnimplementedError();
-  
+  String get changeSuccess => "Изменения успешно сохранены";
+
   @override
-  // TODO: implement chooseColor
-  String get chooseColor => throw UnimplementedError();
-  
+  String get chooseColor => "Выберите цвет";
+
   @override
-  // TODO: implement circle
-  String get circle => throw UnimplementedError();
-  
+  String get circle => "Круг";
+
   @override
-  // TODO: implement color
-  String get color => throw UnimplementedError();
-  
+  String get color => "Цвет";
+
   @override
-  // TODO: implement delete
-  String get delete => throw UnimplementedError();
-  
+  String get delete => "Удалить";
+
   @override
-  // TODO: implement drawing
-  String get drawing => throw UnimplementedError();
-  
+  String get drawing => "Рисование";
+
   @override
-  // TODO: implement inputText
-  String get inputText => throw UnimplementedError();
-  
+  String get inputText => "Введите текст";
+
   @override
-  // TODO: implement mark
-  String get mark => throw UnimplementedError();
-  
+  String get mark => "Выделение";
+
   @override
-  // TODO: implement markerColor
-  String get markerColor => throw UnimplementedError();
-  
+  String get markerColor => "Цвет маркера";
+
   @override
-  // TODO: implement navigaton
-  String get navigaton => throw UnimplementedError();
-  
+  String get navigaton => "Навигация";
+
   @override
-  // TODO: implement noToken
-  String get noToken => throw UnimplementedError();
-  
+  String get noToken => "Токен не найден!";
+
   @override
-  // TODO: implement parseErr
-  String get parseErr => throw UnimplementedError();
-  
+  String get parseErr => "Ошибка при обработке данных";
+
   @override
-  // TODO: implement pic
-  String get pic => throw UnimplementedError();
-  
+  String get pic => "Изображение";
+
   @override
-  // TODO: implement rect
-  String get rect => throw UnimplementedError();
-  
+  String get rect => "Прямоугольник";
+
   @override
-  // TODO: implement saveBoard
-  String get saveBoard => throw UnimplementedError();
-  
+  String get saveBoard => "Сохранить доску";
+
   @override
-  // TODO: implement saveInGuestMode
-  String get saveInGuestMode => throw UnimplementedError();
-  
+  String get saveInGuestMode =>
+      "Недоступно в гостевом режиме. Войдите или зарегистрируйтесь, чтобы сохранить изменения";
+
   @override
-  // TODO: implement text
-  String get text => throw UnimplementedError();
-  
+  String get text => "Текст";
+
   @override
-  // TODO: implement workspace
-  String get workspace => throw UnimplementedError();
-  
+  String get workspace => "Доска продуктивности";
+
   @override
-  // TODO: implement workspaceLoading
-  String get workspaceLoading => throw UnimplementedError();
+  String get workspaceLoading => "Загрузка рабочего пространства...";
 }

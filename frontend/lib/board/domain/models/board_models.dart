@@ -50,7 +50,7 @@ class BoardObject {
   factory BoardObject.fromJson(Map<String, dynamic> json) => BoardObject(
     id: json['id'] as int,
     type: getType(json),
-    position: Offset((json["position_x"] as int).toDouble(), (json["position_y"] as int).toDouble()),
+    position: Offset((json["position_x"] as double).toDouble(), (json["position_y"] as double).toDouble()),
     zPos: json["z_index"] as int,
     size: Size((json["width"] as int).toDouble(), (json["height"] as int).toDouble()),
     color: Color(int.parse(json["color"] as String)),
@@ -125,7 +125,7 @@ class DrawPath {
   static List<Offset> getPoints(List<dynamic> list) {
     List<Offset> result = [];
     for (int i = 0; i < list.length; i++) {
-      result.add(Offset((list[i]['x'] as int).toDouble(), (list[i]['y'] as int).toDouble()));
+      result.add(Offset((list[i]['x'] as double).toDouble(), (list[i]['y'] as double).toDouble()));
     }
     return result;
   }
