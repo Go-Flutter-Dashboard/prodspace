@@ -8,14 +8,14 @@ import (
 )
 
 type Config struct {
-	AppEnv     string `envconfig:"APP_ENV"     default:"DEV" required:"true"`
-	Secret     string `envconfig:"AUTH_SECRET" default:"secret" required:"true"`
-	JwtSecret  string `envconfig:"JWT_SECRET"  default:"secret" required:"true"`
-	DbHost     string `envconfig:"DB_HOST"     default:"localhost" required:"true"`
-	DbUser     string `envconfig:"DB_USER"     default:"postgres" required:"true"`
-	DbPassword string `envconfig:"DB_PASSWORD" default:"postgres" required:"true"`
-	DbName     string `envconfig:"DB_NAME"     default:"db" required:"true"`
-	DbPort     string `envconfig:"DB_PORT"     default:"5432" required:"true"`
+	AppEnv     string `envconfig:"APP_ENV"     required:"true"`
+	Secret     string `envconfig:"AUTH_SECRET" required:"true"`
+	JwtSecret  string `envconfig:"JWT_SECRET"  required:"true"`
+	DbHost     string `envconfig:"DB_HOST"     required:"true"`
+	DbUser     string `envconfig:"DB_USER"     required:"true"`
+	DbPassword string `envconfig:"DB_PASSWORD" required:"true"`
+	DbName     string `envconfig:"DB_NAME"     required:"true"`
+	DbPort     string `envconfig:"DB_PORT"     required:"true"`
 }
 
 var C Config

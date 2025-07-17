@@ -1,11 +1,11 @@
 services:
   postgres:
-    image: postgres:lastest
+    image: postgres:15
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: admindb
+      POSTGRES_DB: prodboardDB
     ports:
       - "5432:5432"
     volumes:
@@ -18,9 +18,10 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - .env
+      - .env.docker
     depends_on:
       - postgres
+    command: ["sh", "/app/wait-for-it.sh", "postgres:5432", "--", "./admin-backend"]
 
 volumes:
   pgdata:

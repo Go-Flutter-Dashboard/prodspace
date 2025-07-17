@@ -16,28 +16,26 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func setupTestDB() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{TranslateError: true})
-	if err != nil {
-		panic("failed to connect test database")
-	}
-
+	db, _ := gorm.Open(
+		sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
+			TranslateError: true,
+			Logger:         logger.Default.LogMode(logger.Silent),
+		},
+	)
 	// Migrate the schema
 	db.AutoMigrate(&schemas.User{}, &schemas.Workspace{})
 	return db
-}
+} 
 
 func TestRegisterUser(t *testing.T) {
 	// Setup
 	app := fiber.New()
-	testDB := setupTestDB()
-	originalDB := database.DB // Save original DB
-	database.DB = testDB      // Replace with test DB
-	defer func() {
-		database.DB = originalDB // Restore original DB
-	}()
+	
+	database.DB = setupTestDB()
 
 	// Mock config
 	config.C.JwtSecret = "test-secret"
@@ -50,7 +48,7 @@ func TestRegisterUser(t *testing.T) {
 		payload        models.UserCreate
 		expectedStatus int
 		expectedError  string
-		setup          func(*gorm.DB)
+		setup          func()
 	}{
 		{
 			name: "Successful registration",
@@ -84,8 +82,8 @@ func TestRegisterUser(t *testing.T) {
 			},
 			expectedStatus: fiber.StatusConflict,
 			expectedError:  "username already exists",
-			setup: func(db *gorm.DB) {
-				db.Create(&schemas.User{
+			setup: func() {
+				database.DB.Create(&schemas.User{
 					Login:        "existinguser",
 					PasswordHash: "hashedpassword",
 				})
@@ -97,7 +95,7 @@ func TestRegisterUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Setup test data if needed
 			if tt.setup != nil {
-				tt.setup(testDB)
+				tt.setup()
 			}
 
 			// Create request
@@ -128,13 +126,13 @@ func TestRegisterUser(t *testing.T) {
 
 				// Verify user was created in DB
 				var user schemas.User
-				testDB.Where("login = ?", tt.payload.Login).First(&user)
+				database.DB.Where("login = ?", tt.payload.Login).First(&user)
 				assert.Equal(t, tt.payload.Login, user.Login)
 				assert.NotEmpty(t, user.PasswordHash)
 
 				// Verify workspace was created
 				var workspace schemas.Workspace
-				testDB.Where("user_id = ?", user.ID).First(&workspace)
+				database.DB.Where("user_id = ?", user.ID).First(&workspace)
 				assert.Equal(t, user.ID, workspace.UserID)
 			}
 		})
@@ -148,7 +146,9 @@ func TestGenerateJWTToken(t *testing.T) {
         ID:    1,
         Login: "testuser",
     }
-
+	
+	database.DB = setupTestDB()
+	
     // Test token generation
     token, err := database.CreateTokenForUser(*user)
     assert.NoError(t, err)

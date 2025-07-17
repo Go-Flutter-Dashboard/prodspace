@@ -230,7 +230,9 @@ func GetMyWorkspace(c *fiber.Ctx) error {
 				}
 				pointReads = append(pointReads, pointRead)
 			}
-			itemRead.DrawingItem.Points = pointReads
+			itemRead.DrawingItem = &models.DrawingItemRead{
+				Points: pointReads,
+			}
 		}
 		
 		itemReads = append(itemReads, itemRead)

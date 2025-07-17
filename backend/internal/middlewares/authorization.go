@@ -9,8 +9,6 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-var jwtSecret = config.C.JwtSecret
-
 type userIDKeyT struct{}
 
 var IDKey userIDKeyT
@@ -35,7 +33,7 @@ func JWTMiddleware(c *fiber.Ctx) error {
         if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
             return nil, fiber.ErrUnauthorized
         }
-        return []byte(jwtSecret), nil
+        return []byte(config.C.JwtSecret), nil
     })
 
     // If token is invalid, continue without setting locals

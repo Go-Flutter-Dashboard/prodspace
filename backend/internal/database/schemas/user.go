@@ -7,7 +7,6 @@ type User struct {
 	Login        string `gorm:"uniqueIndex;not null"`
 	PasswordHash string `gorm:"not null" json:"-"`
 	WorkspaceID  uint
-	Workspace    *Workspace
 }
 
 // Create a workspace for the user

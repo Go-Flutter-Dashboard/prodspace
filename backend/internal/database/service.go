@@ -69,7 +69,7 @@ func InitDatabase() error {
 				Logger:         logger.Default.LogMode(logger.Silent), // silence the gorm logger
 			},
 		)
-		// DB = DB.Debug() // debug postgres queries if needed
+		DB = DB.Debug() // debug postgres queries if needed
 	case "DEV":
 		DB, err = gorm.Open(
 			sqlite.Open("devDb.db"),
@@ -87,6 +87,7 @@ func InitDatabase() error {
 
 	err = DB.AutoMigrate(
 		&schemas.User{},
+		&schemas.Workspace{},
 		&schemas.ImageItem{},
 		&schemas.Item{},
 		&schemas.TextItem{},

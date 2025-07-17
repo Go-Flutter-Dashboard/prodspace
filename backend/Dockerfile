@@ -17,7 +17,5 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /app
 
 COPY --from=builder /app/admin-backend /app/admin-backend
-
-EXPOSE 3000
-
-CMD ["./admin-backend"]
+COPY wait-for-it.sh ./wait-for-it.sh
+RUN chmod +x ./wait-for-it.sh

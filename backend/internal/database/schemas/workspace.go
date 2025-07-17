@@ -4,7 +4,6 @@ import "gorm.io/gorm"
 
 type Workspace struct {
 	UserID uint `gorm:"primaryKey;autoIncrement:false"`
-	User   *User
 	Items  []Item `gorm:"foreignKey:WorkspaceID"`
 }
 
@@ -61,6 +60,7 @@ type TodoListItem struct {
 type Point struct {
 	ID            uint    `gorm:"primaryKey;autoIncrement"`
 	DrawingItemID uint    `gorm:"not null;index"`
+	WorkspaceID   uint    `gorm:"not null;index"`
 	X             float64 `gorm:"not null"`
 	Y             float64 `gorm:"not null"`
 }
@@ -68,7 +68,7 @@ type Point struct {
 type DrawingItem struct {
 	ItemID      uint `gorm:"primaryKey;autoIncrement:false"`
 	WorkspaceID uint `gorm:"primaryKey;autoIncrement:false"`
-	Points      []Point `gorm:"foreignKey:DrawingItemID;references:ItemID"`
+	Points      []Point `gorm:"foreignKey:DrawingItemID,WorkspaceID;references:ItemID,WorkspaceID"`
 }
 
 // Assign a local, scoped within a workspace id to the item

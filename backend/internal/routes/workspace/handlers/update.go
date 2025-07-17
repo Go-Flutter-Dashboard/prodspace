@@ -88,7 +88,7 @@ func AppendWorkspaceItem(c *fiber.Ctx) error {
 			fields = append(fields, schemas.TodoListField{
 				Done: f.Done,
 				TextItem: &schemas.TextItem{
-					Content: f.Content,
+					Content: f.TextItem.Content,
 				},
 			})
 		}
@@ -292,7 +292,7 @@ func AppendMyWorkspaceItem(c *fiber.Ctx) error {
             fields = append(fields, schemas.TodoListField{
                 Done: f.Done,
                 TextItem: &schemas.TextItem{
-                    Content: f.Content,
+                    Content: f.TextItem.Content,
                 },
             })
         }
