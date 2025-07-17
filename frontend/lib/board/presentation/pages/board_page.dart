@@ -25,7 +25,7 @@ class _BordPageState extends State<BoardPage> {
   final List<BoardObject> _objects = [];
   final List<DrawPath> _paths = [];
   // Очередь на отправку
-  final List<BoardItem> _sendQueue = [];
+  final List<BoardAction> _actionQueue = [];
   ToolType _selectedTool = ToolType.selection;
   int? _draggingObjectIndex;
   Set<int> _selectedObjectIndices = {};
@@ -72,7 +72,7 @@ class _BordPageState extends State<BoardPage> {
             color: _rectColor,
           );
           _objects.add(obj);
-          _sendQueue.add(BoardItemObject(obj));
+          _actionQueue.add(BoardAction(BoardItemObject(obj), BoardItemAction.create));
         });
         _nextObjZPos++;
         break;
@@ -86,7 +86,7 @@ class _BordPageState extends State<BoardPage> {
             color: _circleColor,
           );
           _objects.add(obj);
-          _sendQueue.add(BoardItemObject(obj));
+          _actionQueue.add(BoardAction(BoardItemObject(obj), BoardItemAction.create));
         });
         _nextObjZPos++;
         break;
@@ -104,7 +104,7 @@ class _BordPageState extends State<BoardPage> {
             );
             _nextObjZPos++;
             _objects.add(obj);
-            _sendQueue.add(BoardItemObject(obj));
+            _actionQueue.add(BoardAction(BoardItemObject(obj), BoardItemAction.create));
           });
         }
         break;
@@ -133,7 +133,7 @@ class _BordPageState extends State<BoardPage> {
             );
             _nextObjZPos++;
             _objects.add(obj);
-            _sendQueue.add(BoardItemObject(obj));
+            _actionQueue.add(BoardAction(BoardItemObject(obj), BoardItemAction.create));
           });
         }
         break;
@@ -213,7 +213,7 @@ class _BordPageState extends State<BoardPage> {
       setState(() {
         _isDrawing = false;
         if (_currentPath != null) {
-          _sendQueue.add(BoardItemPath(_currentPath!));
+          _actionQueue.add(BoardAction(BoardItemPath(_currentPath!), BoardItemAction.create));
         }
         _currentPath = null;
       });
@@ -305,10 +305,16 @@ class _BordPageState extends State<BoardPage> {
     setState(() {
       _selectedObjectIndices.toList()
         ..sort((a, b) => b.compareTo(a))
-        ..forEach((i) => _objects.removeAt(i));
+        ..forEach((i) {
+          _objects.removeAt(i);
+           _actionQueue.add(BoardAction(BoardItemObject(_objects[i]), BoardItemAction.delete));
+           });
       _selectedPathIndices.toList()
         ..sort((a, b) => b.compareTo(a))
-        ..forEach((i) => _paths.removeAt(i));
+        ..forEach((i) {
+           _paths.removeAt(i);
+           _actionQueue.add(BoardAction(BoardItemPath(_paths[i]), BoardItemAction.delete));
+          });
       _selectedObjectIndices.clear();
       _selectedPathIndices.clear();
     });
@@ -416,31 +422,41 @@ class _BordPageState extends State<BoardPage> {
     }
 
     // Копируем очередь, чтобы не было проблем при изменении во время отправки
-    final List<BoardItem> queueCopy = List.from(_sendQueue);
+    final List<BoardAction> queueCopy = List.from(_actionQueue);
     for (int i = 0; i < queueCopy.length; i++) {
       try {
+        String? message;
         // Send request and recive error message
-        final message = await BoardBackendConnectionUtils.sendBoardItem(queueCopy[i], token);
+        switch (queueCopy[i].action) {
+          case BoardItemAction.create:
+            message = await BoardBackendConnectionUtils.sendBoardItem(queueCopy[i].item, token);
+            break;
+          case BoardItemAction.delete:
+            message = await BoardBackendConnectionUtils.deleteItem(queueCopy[i].item.getId(), token);
+            break;
+          default:
+            break;
+        }
         if (message == null) {
-          setState(() {
-            _sendQueue.remove(queueCopy[i]); // Удаляем из очереди после успешной отправки
-          });
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            (queueCopy[i] is BoardItemObject)
-            ? SnackBar(content: Text('Объект: ${(queueCopy[i] as BoardItemObject).object.zPos} успешно отправлен!'), duration: Duration(milliseconds: 500),)
-            : SnackBar(content: Text('Объект: Drawing успешно отправлен!'), duration: Duration(milliseconds: 500),),
-          );
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка отправки объекта: $message')),
-        );
-      }
+              setState(() {
+                _actionQueue.remove(queueCopy[i]); // Удаляем из очереди после успешной отправки
+              });
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                (queueCopy[i] is BoardItemObject)
+                ? SnackBar(content: Text('Изменение: ${(queueCopy[i] as BoardItemObject).object.zPos} успешно отправлен!'), duration: Duration(milliseconds: 500),)
+                : SnackBar(content: Text('Изменение: Drawing успешно отправлен!'), duration: Duration(milliseconds: 500),),
+              );
+            } else {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Ошибка при отправке изменений объекта: $message')),
+            );
+            }
       } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка соединения при отправке объекта: ${e.toString()}')),
+          SnackBar(content: Text('Ошибка соединения при отправке изменений: ${e.toString()}')),
         );
       }
     }

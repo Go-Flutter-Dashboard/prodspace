@@ -25,6 +25,8 @@ class BoardBackendConnectionUtils {
         body: jsonEncode(boardData),
       );
 
+      item.setId(jsonDecode(response.body)['id'] as int);
+
       // Return Success flag
       return (response.statusCode >= 200 && response.statusCode < 300) ? null : "${response.statusCode}: ${response.body}";
     } catch (e) {
@@ -62,6 +64,24 @@ class BoardBackendConnectionUtils {
       return BoardItemPath(DrawPath.fromJson(json));
     } else {
       return BoardItemObject(BoardObject.fromJson(json));
+    }
+  }
+
+  static Future<String?> deleteItem(int id, String token) async {
+    // Send request
+    try {
+      final response = await http.delete(
+        Uri.parse('http://localhost:3000/workspaces/my/items/${id}'),
+        headers: {
+          'Authorization': "Bearer $token",
+          'Content-Type': 'application/json',
+        },
+      );
+
+      // Return Success flag
+      return (response.statusCode >= 200 && response.statusCode < 300) ? null : "${response.statusCode}: ${response.body}";
+    } catch (e) {
+      rethrow;
     }
   }
 }

@@ -17,6 +17,7 @@ enum BoardObjectType { rectangle, circle, text, path, image, err }
 
 @JsonSerializable()
 class BoardObject {
+  int? id;
   final BoardObjectType type;
   final Offset position;
   final int zPos;
@@ -33,6 +34,7 @@ class BoardObject {
     required this.color,
     this.text,
     this.imageBytes,
+    this.id,
   });
 
   static BoardObjectType getType(Map<String, dynamic> json) {
@@ -46,6 +48,7 @@ class BoardObject {
   }
 
   factory BoardObject.fromJson(Map<String, dynamic> json) => BoardObject(
+    id: json['id'] as int,
     type: getType(json),
     position: Offset((json["position_x"] as int).toDouble(), (json["position_y"] as int).toDouble()),
     zPos: json["z_index"] as int,
@@ -115,8 +118,9 @@ class DrawPath {
   final List<Offset> points;
   final Color color;
   final double strokeWidth;
+  int? id;
 
-  DrawPath({required this.points, required this.color, this.strokeWidth = 3});
+  DrawPath({required this.points, required this.color, this.strokeWidth = 3, this.id});
 
   static List<Offset> getPoints(List<dynamic> list) {
     List<Offset> result = [];
@@ -127,6 +131,7 @@ class DrawPath {
   }
 
   factory DrawPath.fromJson(Map<String, dynamic> json) => DrawPath(
+    id: json['id'] as int,
     points: getPoints(json['drawing']['points']),
     color: Color(int.parse(json["color"] as String)),
     );
@@ -143,6 +148,8 @@ class DrawPath {
 
 abstract class BoardItem {
   Map<String, dynamic> toJson();
+  void setId(int id);
+  int getId();
 }
 
 class BoardItemObject extends BoardItem {
@@ -152,6 +159,16 @@ class BoardItemObject extends BoardItem {
   @override
   Map<String, dynamic> toJson() {
     return object.toJson();
+  }
+
+  @override
+  void setId(int id) {
+    object.id = id;
+  }
+
+  @override
+  int getId() {
+    return object.id!;
   }
 }
 
@@ -163,4 +180,22 @@ class BoardItemPath extends BoardItem {
   Map<String, dynamic> toJson() {
     return path.toJson();
   }
+
+  @override
+  void setId(int id) {
+    path.id = id;
+  }
+
+  @override
+  int getId() {
+    return path.id!;
+  }
+}
+
+enum BoardItemAction {create, update, delete}
+
+class BoardAction {
+  final BoardItem item;
+  final BoardItemAction action;
+  BoardAction(this.item, this.action);
 }

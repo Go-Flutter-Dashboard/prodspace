@@ -120,7 +120,6 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                       );
                     },
-                    activeThumbColor: colorScheme.primary,
                     activeTrackColor: colorScheme.primaryContainer,
                   ),
                 ],
