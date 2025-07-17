@@ -183,6 +183,9 @@ func GetMyWorkspace(c *fiber.Ctx) error {
 			ZIndex:      item.ZIndex,
 			WorkspaceID: item.WorkspaceID,
 			Color:		 item.Color,
+			Width:		 item.Width,
+			Height:		 item.Height,
+			Scale:       item.Scale,
 		}
 
 		// Handle text items
