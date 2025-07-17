@@ -4,7 +4,7 @@ Fully developped the backend, configured CI/CD workflows for testing and deployi
 
 # Damir Sadykov
 
-Frontend: implemented settings, themes, login and register screens, troubleshooting errors
+Frontend: implemented settings, themes, login and register and settings screens, troubleshooting errors, saving to and from backend.
 
 # Ilya Maksimov
 
