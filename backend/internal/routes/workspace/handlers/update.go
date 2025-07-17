@@ -265,6 +265,8 @@ func AppendMyWorkspaceItem(c *fiber.Ctx) error {
         ZIndex:      itemCreate.ZIndex,
         Color:       itemCreate.Color,
         Scale:       itemCreate.Scale,
+        Width:       itemCreate.Width,
+        Height:      itemCreate.Height,
     }
 
     // Handle different item types except ShapeItem

@@ -799,6 +799,10 @@ const docTemplate = `{
                 "drawing": {
                     "$ref": "#/definitions/models.DrawingItemCreate"
                 },
+                "height": {
+                    "type": "number",
+                    "example": 20
+                },
                 "image": {
                     "$ref": "#/definitions/models.ImageItemCreate"
                 },
@@ -825,6 +829,10 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.TodoItemFieldCreate"
                     }
+                },
+                "width": {
+                    "type": "number",
+                    "example": 20
                 },
                 "z_index": {
                     "type": "integer",

@@ -76,6 +76,9 @@ definitions:
         type: string
       drawing:
         $ref: '#/definitions/models.DrawingItemCreate'
+      height:
+        example: 20
+        type: number
       image:
         $ref: '#/definitions/models.ImageItemCreate'
       position_x:
@@ -95,6 +98,9 @@ definitions:
         items:
           $ref: '#/definitions/models.TodoItemFieldCreate'
         type: array
+      width:
+        example: 20
+        type: number
       z_index:
         example: 1
         type: integer

@@ -43,6 +43,8 @@ type ItemCreate struct {
 	ZIndex      uint                   `json:"z_index"             example:"1"`
 	Color       string                 `json:"color"               example:"#FFFFFF"`
 	Scale       float64                `json:"scale"               example:"1.0"`
+	Width       float64                `json:"width" example:"20.0"`
+	Height      float64                `json:"height" example:"20.0"`
 	TextItem    *TextItemCreate        `json:"text,omitempty"`
 	ImageItem   *ImageItemCreate       `json:"image,omitempty"`
 	TodoList    *[]TodoItemFieldCreate `json:"todo_list,omitempty"`
