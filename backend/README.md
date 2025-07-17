@@ -15,3 +15,6 @@ Optionally, generate swagger docs with
 
 ![Database architecture diagram](docs/diagram.png)
 
+OR pull the docker container
+
+`docker pull 0bochina/backend:latest`
